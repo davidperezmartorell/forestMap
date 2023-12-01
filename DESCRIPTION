@@ -1,0 +1,19 @@
+Package: forestmap
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: GPL-3
+Encoding: UTF-8
+Imports:
+    readr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Data: /inst/taxon_final_practicasDavid.csv
+      /inst/comm_nodist_plants.csv
+
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
