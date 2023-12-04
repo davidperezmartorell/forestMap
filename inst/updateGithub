@@ -5,3 +5,9 @@ echo "# forestMap" >> README.md
   git branch -M main
   git remote add origin https://github.com/davidperezmartorell/forestMap.git
   git push -u origin main
+  
+  #Request to Oxygen to recreate files
+ roxygen2::roxygenise()
+ 
+ #See errors
+ rlang::last_trace(drop = FALSE)
