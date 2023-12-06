@@ -14,22 +14,32 @@ library("leaflet")
   
   # Filter out rows with NA in the country column
   data <- data %>% filter(!is.na(country))
-  data <- data %>% filter(!is.na(exact_lat) & !is.na(exact_long))
+  data <- data %>% filter(!is.na(CapitalLatitude) & !is.na(CapitalLongitude))
+  
+
+  
+  summary_data <- data %>%
+    group_by(country, CapitalLatitude, CapitalLongitude) %>%
+    summarise(count_comm = n_distinct(id_comm),
+              count_study = n_distinct(id_study))
   browser()
 
-
   # Create a leaflet map
-  leaflet() %>%
+  leaflet(data = summary_data) %>%
     addTiles() %>%
     addCircleMarkers(
-      data = data,
-      lat = ~exact_lat,
-      lng = ~exact_long,
-      popup = ~id_study,
-      label = ~study_year
+      lat = ~CapitalLatitude,
+      lng = ~CapitalLongitude,
+      popup = ~paste("Country: ", country, "<br>",
+                     "Count Comm: ", count_comm, "<br>",
+                     "Count Study: ", count_study),
+      label = ~count_comm,  # You can change this to any variable you want to display as the label
+      color = "blue",
+      fillOpacity = 0.7,
+      radius = 3 + (summary_data$count_comm / max(summary_data$count_comm)) * 20
     )
 }
 
 
 
-
+1

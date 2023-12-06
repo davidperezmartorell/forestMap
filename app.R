@@ -33,7 +33,8 @@ source(library_path)
  index <- data$index
  
  #Main information
- selectGeneral <- selectGeneral(index,assemblages,taxon)
+ selectGeneral <- selectGeneral(index,assemblages,taxon)  # Index main values  to plot general map
+ selectGeneral <- getCapital(selectGeneral)               # Add capital of each contry, latitude and longitude
 
  # UI
   ui <- fluidPage(
@@ -70,7 +71,7 @@ source(library_path)
     # })
     
   }
-  browser()
+
   plotMap(input,selectGeneral)
   shinyApp(ui, server)
   

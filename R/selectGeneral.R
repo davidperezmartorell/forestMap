@@ -26,6 +26,7 @@ selectGeneral <- function(index,assemblages,taxon) {
   
   # Remove duplicated rows
   unique_merged_data <- distinct(merged_data)
+  
   return(unique_merged_data)
 
 }
