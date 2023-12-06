@@ -10,6 +10,11 @@ getCapital <- function(selectGeneral){
   result <- selectGeneral %>% left_join(capitals, by = c("country" = "CountryName"))
   result$CapitalLatitude <- as.numeric(result$CapitalLatitude)
   result$CapitalLongitude <- as.numeric(result$CapitalLongitude)
- return(result)
+
+  # Filter out rows with NA in the country column
+  result <- result %>% filter(!is.na(country))
+  result <- result %>% filter(!is.na(CapitalLatitude) & !is.na(CapitalLongitude))
+
+  return(result)
 }
 
