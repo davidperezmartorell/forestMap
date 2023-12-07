@@ -10,12 +10,14 @@ Encoding: UTF-8
 Imports:
    readr,
    leaflet,
-   shiny
+   shiny,
+   dplyr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Data: inst/taxon_cleaned1.csv
       inst/taxon_cleaned2.csv
       inst/comm_nodist_plants.csv
+      inst/country-capitals.csv
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

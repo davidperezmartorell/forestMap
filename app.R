@@ -1,6 +1,9 @@
 # Install the 'here' package if you haven't already
 # install.packages("here")
 
+#roxygen2::roxygenise()
+#runApp()
+
 # Load the 'here' package
 library("here")
 library("dplyr")
@@ -24,17 +27,22 @@ source(library_path)
 library_path <- here::here("R", "plotMap.R")
 source(library_path)
 
-
- 
 #Load data
+ cat("Loading all data\n")
  data <- loadData()
  taxon <- data$taxon
  assemblages <- data$assemblages
  index <- data$index
- 
+
+#Load shapes
+ if (length(list.files("inst/gadm")) == 0) { #Check if map folder is empty or not. If it's empty, load shapes
+   cat("No map loaded. Let's download shapes in inst/gadm")
+   downloadAllShapes()
+ } else{cat("All maps seems downloaded\n")}
+  
  #Main information
  selectGeneral <- selectGeneral(index,assemblages,taxon)  # Index main values  to plot general map
- selectGeneral <- getCapital(selectGeneral)               # Add capital of each contry, latitude and longitude
+ 
 
  # UI
   ui <- fluidPage(
@@ -43,35 +51,32 @@ source(library_path)
     sidebarLayout(
       sidebarPanel(
         # Add UI components for taxon level, species, and study year selection
-        selectInput("id_comm", "Select Comm", choices = unique(selectGeneral$id_comm)),
-        selectInput("id_study", "Select study", choices = unique(selectGeneral$id_study.x)),
-        actionButton("updateMap", "Update Map")
+        selectInput("country", "Select country", choices = c("All the World",unique(selectGeneral$country)), selected="All the World")
       ),
       mainPanel(
-        leafletOutput("map")
+        plotMap(input, selectGeneral)
       )
     )
   )
   
   # Server
   server <- function(input, output, session) {
-    
-    
-    # # Render the map
-    # output$map <- renderLeaflet({
-    #   leaflet() %>%
-    #     addTiles() %>%
-    #     addCircleMarkers(
-    #       data = filtered_data(),
-    #       lat = ~exact_lat,
-    #       lng = ~exact_long,
-    #       popup = ~id_study.x,
-    #       label = ~study_year
-    #     )
-    # })
-    
-  }
+    # Create a reactive value to track changes in the input$country
+    observeEvent(input$country, {
+      cat("something has changed in country option\n")
+      # Check if the selected country is "All the World"
+      if (input$country == "All the World") {
+        cat("Plotting World map\n")
+        plotMap(input, selectGeneral)
+      } else {
+        cat("Plotting ", input$country, " map\n")
+        dataSelectedCountry <- selectCountry(selectGeneral, input$country)
+        plotMapForCountry(input, dataSelectedCountry)
+      }
+    })
+  
+}
 
-  plotMap(input,selectGeneral)
+
   shinyApp(ui, server)
   
