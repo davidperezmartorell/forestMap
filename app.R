@@ -59,7 +59,7 @@ source(library_path)
        width = 4, 
        # Aquí escogemos el país según datos de archivo y tabla países
        fluidRow(
-         column(width = 6,
+         column(width = 12,
                 selectInput("country", label = "Select country", 
                             choices = c("All the World", unique(selectGeneral$country)),
                             selected = "All the World"),

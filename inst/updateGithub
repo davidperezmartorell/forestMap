@@ -11,3 +11,7 @@ echo "# forestMap" >> README.md
  
  #See errors
  rlang::last_trace(drop = FALSE)
+ 
+ #Execute code
+ shiny::runApp()
+ runApp()
