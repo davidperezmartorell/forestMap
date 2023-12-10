@@ -9,6 +9,9 @@ library("here")
 library("dplyr")
 library("ggplot2")
 library("leaflet")
+library("shiny")
+library("shinyjs")
+
 
 # Load all libraries
 # Load libraries
@@ -42,41 +45,82 @@ source(library_path)
   
  #Main information
  selectGeneral <- selectGeneral(index,assemblages,taxon)  # Index main values  to plot general map
+ # Define a reactive value to store the map
+ mapToPlot <- reactiveVal()
+ 
+  # Menu --------------------------------------------------------------------
+ # UI
+ ui <- fluidPage(
+   useShinyjs(), # Agregar esta función para usar shinyjs
+   # Encabezado del código con un título
+   titlePanel(HTML("<h3>Mapas de todo el mundo patrocinado por https://ecosistemaglobal.org/ y Asociacion Focazul</h3>")),
+   sidebarLayout(
+     sidebarPanel(
+       width = 4, 
+       # Aquí escogemos el país según datos de archivo y tabla países
+       fluidRow(
+         column(width = 6,
+                selectInput("country", label = "Select country", 
+                            choices = c("All the World", unique(selectGeneral$country)),
+                            selected = "All the World"),
+                textOutput("Select country")
+         )
+       ),
+       # Botón para resetear contenido
+       actionButton("reset", "reset")
+     ), # Fin de sidebarPanel
+     mainPanel(
+       htmlOutput("TittleMap"),
+       leafletOutput("map"),
+       footer() 
+       # plotAll(input, option, selectGeneral)
+     )
+   ) # Fin de UI
+ )
+ 
  
 
- # UI
-  ui <- fluidPage(
-    titlePanel("Species Map"),
-    
-    sidebarLayout(
-      sidebarPanel(
-        # Add UI components for taxon level, species, and study year selection
-        selectInput("country", "Select country", choices = c("All the World",unique(selectGeneral$country)), selected="All the World")
-      ),
-      mainPanel(
-        plotMap(input, selectGeneral)
-      )
-    )
-  )
   
   # Server
-  server <- function(input, output, session) {
-    # Create a reactive value to track changes in the input$country
-    observeEvent(input$country, {
-      cat("something has changed in country option\n")
-      # Check if the selected country is "All the World"
-      if (input$country == "All the World") {
-        cat("Plotting World map\n")
-        plotMap(input, selectGeneral)
-      } else {
-        cat("Plotting ", input$country, " map\n")
-        dataSelectedCountry <- selectCountry(selectGeneral, input$country)
-        plotMapForCountry(input, dataSelectedCountry)
+  server <- function(input, output,session) {
+
+   # Create a reactive value to track changes in the input$country
+     observeEvent(input$country, {
+       cat("something has changed in country option\n")
+       # Check if the selected country is "All the World"
+       if (input$country == "All the World") {
+         cat("Plotting World map\n")
+         myMapToPlot <- renderMap(input,"general",selectGeneral)
+       } else {
+         cat("Plotting ", input$country, " map\n")
+         dataSelectedCountry <- selectCountry(selectGeneral, input$country)
+         myMapToPlot <- renderMap(input,"country",dataSelectedCountry)
+       }
+       mapToPlot(myMapToPlot)  # Store the map in the reactive value
+     })
+    
+    # Call the function with the required arguments
+    observeResetButton(session, input)
+    
+    # aquí va el código para que acctualice
+    run_code <- function() {
+      flush.console()
+    }
+    
+    # Función para renderizar el título del mapa
+    output$TittleMap <- renderText({
+      run_code()
+    })
+    
+
+    # Use this function in your server.R
+    output$map <- renderLeaflet({
+      map <- mapToPlot()  # Retrieve the stored map
+      if (!is.null(map)) {
+        map
       }
     })
-  
-}
+}#End of server function
 
-
-  shinyApp(ui, server)
+shinyApp(ui, server)
   

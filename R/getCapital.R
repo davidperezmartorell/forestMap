@@ -6,7 +6,8 @@
 #' getCapital(selectGeneral)
 getCapital <- function(selectGeneral){
   #source http://techslides.com/list-of-countries-and-capitals#google_vignette
-  capitals <- read.csv("inst/country-capitals.csv", stringsAsFactors = FALSE, sep = ",", header = TRUE, fileEncoding="latin1")
+  capitals <- read.csv("inst/countryCapitals.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding="latin1")
+
   result <- selectGeneral %>% left_join(capitals, by = c("country" = "CountryName"))
   result$CapitalLatitude <- as.numeric(result$CapitalLatitude)
   result$CapitalLongitude <- as.numeric(result$CapitalLongitude)
@@ -14,7 +15,6 @@ getCapital <- function(selectGeneral){
   # Filter out rows with NA in the country column
   result <- result %>% filter(!is.na(country))
   result <- result %>% filter(!is.na(CapitalLatitude) & !is.na(CapitalLongitude))
-
+  cat("Loading capitals, latitud and longitud for each country\n")
   return(result)
 }
-

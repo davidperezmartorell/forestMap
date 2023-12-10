@@ -1,14 +1,14 @@
-#' Download all assemblages values
+#' treeDecission all assemblages values indexing by richness and abund
 #' @param NULL No values input
-#' @return list(taxon = taxon, assemblages = assemblages, index = index) No values output
+#' @return NULL No values output
 #' @export
 #' @examples
-#' loadData()
-loadData <- function(){
+#' treeDecission()
+treeDecission <- function(){
   library("readr")
   library("dplyr")
 
-  # Create an empty data frame with the same structure as taxon
+# treeDecission evaluate the more importants variables in our data
   taxon <- data.frame(
     id = integer(0),
     id_comm = character(0),
@@ -88,13 +88,7 @@ loadData <- function(){
     error_class = numeric(0)
   )
   
-  # Create index data frame
-  index <- data.frame(
-    id_comm = character(0),
-    id_study = character(0)
-  )  
-  
-    
+
   #First check if data exists in file
     #Load taxons
       #File is divided because more than 50Mb
@@ -108,22 +102,64 @@ loadData <- function(){
       assemblages <- read.csv("inst/comm_nodist_plants.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding="latin1")
       }
 
-    #Create index table with Common columns
-      #check if exists index.csv
-      if (nrow(assemblages) == 0) {
-       index <- taxon %>% select(id_comm , id_study)
-       index <- distinct(index)
-       #Write index in order to have it easier and not merge everytime we need.
-        write.table(index, file = "inst/index.csv", sep = ";", row.names = FALSE, col.names = TRUE, quote = TRUE)
-       } else{ #Write index in order to have it easier and not merge everytime we need.
-       index <- read_delim("inst/index.csv", delim = ";", show_col_types = FALSE)
-       }
 
-
-  # Create a list to hold the data frames
-  result_list <- list(taxon = taxon, assemblages = assemblages, index = index)
+  #Merge data of taxon and assemblages
+  merged_data <- merge(assemblages, taxon, by = c("id_comm", "id_study"))
   
-  # Return the list
-  return(result_list)
+  
+  
+  #TREE DECISSION FOR RICHNESS
+  # Remove rows with missing values in the target variable 'richness'
+  filtered_data <- merged_data[!is.na(merged_data$richness), ]
+  
+  filtered_data2<-filtered_data%>% select(richness,age,age_ori,study_year,stage,study_common_taxon,metric.x,metric_source,sampling_method,predisturbances,disturbance1_age,disturbance2,disturbance1_age_clean,disturbance2_clean,n_disturbances,current_impact,richness_study,richness,abund,taxon_level.x)
+  filtered_data3 <- filtered_data2 %>%  mutate_all(~ ifelse(is.na(.), "", as.character(.)))
+
+  # Convert specific columns to numeric
+  filtered_data3$age <- as.numeric(filtered_data3$age)
+  filtered_data3$age_ori <- as.numeric(filtered_data3$age_ori)
+  filtered_data3$study_year <- as.numeric(filtered_data3$study_year)
+  filtered_data3$n_disturbances <- as.numeric(filtered_data3$n_disturbances)
+  filtered_data3$richness_study <- as.numeric(filtered_data3$richness_study)
+  filtered_data3$richness <- as.numeric(filtered_data3$richness)
+  filtered_data3$abund <- as.numeric(filtered_data3$abund)
+  
+  filtered_data4 <- na.omit(filtered_data3)
+  
+  
+  #Convert text values in categories
+      # Identify non-numeric columns to convert to factors
+      columns_to_convert <- c("metric.x","metric_source", "stage","sampling_method", "study_common_taxon", "predisturbances", 
+                              "disturbance1_age", "disturbance2", 
+                              "disturbance1_age_clean", "disturbance2_clean", 
+                              "current_impact")
+      # Convert specified columns to factors
+      filtered_data4[columns_to_convert] <- lapply(filtered_data4[columns_to_convert], as.factor)
+
+  
+  
+  #####################################
+  # Fit a random forest model by richness
+  #####################################
+  library("randomForest")
+  rf_model <- randomForest(richness ~ ., data = filtered_data4)
+
+  # View variable importance
+  var_importance_for_richness <- importance(rf_model)
+  
+  # Print the ordered variable importance
+  print(var_importance_for_richness)
+  
+  #####################################
+  # Fit a random forest model by abund
+  #####################################
+  library("randomForest")
+  rf_model_abund <- randomForest(abund ~ ., data = filtered_data4)
+  
+  # View variable importance
+  var_importance_for_abund <- importance(rf_model_abund)
+  
+  # Print the ordered variable importance
+  print(var_importance_for_abund)
 }
 

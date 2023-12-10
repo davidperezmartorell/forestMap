@@ -1,17 +1,24 @@
-Package: forestmap
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Package: forestMap
+Title: "Interactive Map for Visualizing Database Studies and Inventoried Species"
+Version: 1.0.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("David", "Perez", , "davidperezmartorell@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 License: GPL-3
 Encoding: UTF-8
 Imports:
-   readr,
-   leaflet,
-   shiny,
-   dplyr
+ raster,
+ sf,
+ terra,
+ rworldmap,
+ sp,
+ readr,
+ leaflet,
+ ggplot2,
+ dplyr,
+ here,
+ shiny
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Data: inst/taxon_cleaned1.csv

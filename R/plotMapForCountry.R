@@ -16,12 +16,17 @@ library("sf")
 library("raster")
 library("sp")
 
+  browser()
   summary_data <- data %>%
-    group_by(country, exact_lat, exact_long, .groups = 'drop') %>%
+    group_by(country, exact_lat, exact_long) %>%
     summarise(count_comm = n_distinct(id_comm),
-              count_study = n_distinct(id_study)) %>%
+              count_study = n_distinct(id_study),
+              .groups = 'drop') %>%
     ungroup()
 
+    
+    
+    
   # Create file name according country
   iso3_values <- data$iso3 %>% unique()
   file <- paste0("inst/gadm/gadm41_", iso3_values, "_1_pk.rds")
@@ -48,20 +53,22 @@ library("sp")
   # Convert matrix to data frame
   elevation_df <- as.data.frame(elevation_df)
   # Now, check the structure and class
-  browser()
+  
   # Get the min and max elevation values
-  min_elevation <- min(elevation_df[[3]], na.rm = TRUE)
+  min_elevation <- 0
   max_elevation <- max(elevation_df[[3]], na.rm = TRUE)
   
-  
+  # Define your custom color palette
+  custom_palette <- c( "green","burlywood1","darkgoldenrod1","darkgoldenrod4" ,"brown", "darkgray", "azure4")
   # Create a ggplot
+  browser()
   ggplot() +
-    geom_raster(data = as.data.frame(elevation_df), aes(x = x, y = y, fill = elevation_df[[3]])) +
+    geom_raster(data = elevation_df, aes(x = x, y = y, fill = data[[3]])) +
     geom_sf(data = country_df, aes(geometry = geometry), fill = "transparent", color = "black", size = 2) +
     geom_point(data = summary_data, aes(x = exact_long, y = exact_lat), color = "red", size = 3) +
     theme_minimal() +
     labs(title = "Elevations", fill = "Elevations") +
-    scale_fill_viridis_c(option = "viridis", limits = c(min_elevation, max_elevation))
+    scale_fill_gradientn(colors = custom_palette, limits = c(min_elevation, max_elevation))
   
   
 }
