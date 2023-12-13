@@ -5,12 +5,14 @@
 #runApp()
 
 # Load the 'here' package
-library("here")
-library("dplyr")
-library("ggplot2")
-library("leaflet")
-library("shiny")
-library("shinyjs")
+library("here") #Load files
+library("dplyr")  #Work with dataframes
+library("ggplot2") #Plot maps
+library("leaflet") #Plot maps
+library("shiny") #To shiny menus and frames
+library("shinyjs") #Special options from shiny
+library("raster")
+library("sf")  #To add buttons in menu
 
 
 # Load all libraries
@@ -53,7 +55,7 @@ source(library_path)
  ui <- fluidPage(
    useShinyjs(), # Agregar esta función para usar shinyjs
    # Encabezado del código con un título
-   titlePanel(HTML("<h3>Mapas de todo el mundo patrocinado por https://ecosistemaglobal.org/ y Asociacion Focazul</h3>")),
+   titlePanel(HTML("<h3>Plot maps from particular inventory with studies and inventories</h3>")),
    sidebarLayout(
      sidebarPanel(
        width = 4, 
@@ -65,6 +67,13 @@ source(library_path)
                             selected = "All the World"),
                 textOutput("Select country")
          )
+       ),
+       fluidRow(
+         column(width = 12,
+                checkboxInput("showElevation", "Elevation", value = FALSE),
+                checkboxInput("showRivers", "Rivers", value = FALSE),
+                checkboxInput("showBorders", "Borders", value = FALSE)
+                ),
        ),
        # Botón para resetear contenido
        actionButton("reset", "reset")
@@ -83,22 +92,49 @@ source(library_path)
   
   # Server
   server <- function(input, output,session) {
+    # Enable shinyjs
+    shinyjs::hide("showElevation")
+    shinyjs::hide("showRivers")
+    shinyjs::hide("showBorders")
+    # Observe changes in showElevation and showRivers
+    observe({
+      if (input$country != "All the World") {
+          shinyjs::show("showRivers")
+          shinyjs::show("showElevation")
+          shinyjs::show("showBorders")
+        }
+    })
+      
+      
 
-   # Create a reactive value to track changes in the input$country
-     observeEvent(input$country, {
-       cat("something has changed in country option\n")
-       # Check if the selected country is "All the World"
-       if (input$country == "All the World") {
-         cat("Plotting World map\n")
-         myMapToPlot <- renderMap(input,"general",selectGeneral)
-       } else {
-         cat("Plotting ", input$country, " map\n")
-         dataSelectedCountry <- selectCountry(selectGeneral, input$country)
-         myMapToPlot <- renderMap(input,"country",dataSelectedCountry)
-       }
-       mapToPlot(myMapToPlot)  # Store the map in the reactive value
-     })
-    
+    # Create a reactive value to track changes in the input$country
+    observeEvent(c(input$country, input$showElevation, input$showRivers, input$showBorders), {
+      cat("something has changed in country option\n")
+      # Check if the selected country is "All the World"
+      if (input$country == "All the World") {
+        cat("Plotting World map\n")
+        myMapToPlot <- renderMap(input, "general", selectGeneral)
+      } else {
+        cat("Plotting ", input$country, " map\n")
+        dataSelectedCountry <- selectCountry(selectGeneral, input$country)
+        # Check if we want a clean map, add rivers, or add elevations layers
+        if (input$showElevation) {
+          # Handle when showElevation is TRUE
+          myMapToPlot <- renderMap(input, "elevation", dataSelectedCountry)
+        } else if (input$showRivers) {
+          # Handle when showRivers is TRUE
+          myMapToPlot <- renderMap(input, "rivers", dataSelectedCountry)
+        } else if (input$showBorders) {
+          # Handle when showRivers is TRUE
+          myMapToPlot <- renderMap(input, "borders", dataSelectedCountry)
+        } else {
+          # Handle the default case when neither showElevation nor showRivers is TRUE
+          myMapToPlot <- renderMap(input, "country", dataSelectedCountry)
+        }
+      }
+      mapToPlot(myMapToPlot)  # Store the map in the reactive value
+    })
+
     # Call the function with the required arguments
     observeResetButton(session, input)
     
