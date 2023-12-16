@@ -33,7 +33,7 @@ library_path <- here::here("R", "plotMap.R")
 source(library_path)
 
 #Load data
- cat("Loading all data\n")
+ cat("app.R: Loading all data\n")
  data <- loadData()
  taxon <- data$taxon
  assemblages <- data$assemblages
@@ -41,9 +41,9 @@ source(library_path)
 
 #Load shapes
  if (length(list.files("inst/gadm")) == 0) { #Check if map folder is empty or not. If it's empty, load shapes
-   cat("No map loaded. Let's download shapes in inst/gadm")
+   cat("app.R: No map loaded. Let's download shapes in inst/gadm")
    downloadAllShapes()
- } else{cat("All maps seems downloaded\n")}
+ } else{cat("app.R: All maps seems downloaded\n")}
   
  #Main information
  selectGeneral <- selectGeneral(index,assemblages,taxon)  # Index main values  to plot general map
@@ -109,13 +109,13 @@ source(library_path)
 
     # Create a reactive value to track changes in the input$country
     observeEvent(c(input$country, input$showElevation, input$showRivers, input$showBorders), {
-      cat("something has changed in country option\n")
+      cat("app.R: Something has changed in country option\n")
       # Check if the selected country is "All the World"
       if (input$country == "All the World") {
-        cat("Plotting World map\n")
+        cat("app.R: Plotting World map\n")
         myMapToPlot <- renderMap(input, "general", selectGeneral)
       } else {
-        cat("Plotting ", input$country, " map\n")
+        cat("app.R: Searching data from", input$country, " map\n")
         dataSelectedCountry <- selectCountry(selectGeneral, input$country)
         # Check if we want a clean map, add rivers, or add elevations layers
         if (input$showElevation) {

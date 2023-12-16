@@ -15,6 +15,6 @@ getCapital <- function(selectGeneral){
   # Filter out rows with NA in the country column
   result <- result %>% filter(!is.na(country))
   result <- result %>% filter(!is.na(CapitalLatitude) & !is.na(CapitalLongitude))
-  cat("Loading capitals, latitud and longitud for each country\n")
+  cat("getCapital.R: Loading capitals, latitud and longitud for each country\n")
   return(result)
 }
