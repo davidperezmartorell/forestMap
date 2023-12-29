@@ -4,51 +4,68 @@
 #roxygen2::roxygenise()
 #runApp()
 
-# Load the 'here' package
-library("here") #Load files
-library("dplyr")  #Work with dataframes
-library("ggplot2") #Plot maps
-library("leaflet") #Plot maps
-library("shiny") #To shiny menus and frames
-library("shinyjs") #Special options from shiny
-library("raster")
-library("sf")  #To add buttons in menu
 
-
-# Load all libraries
-# Load libraries
-library_path <- here::here("R", "loadLibraries.R")
-source(library_path)
-
-# Select main information
-library_path <- here::here("R", "selectGeneral.R")
-source(library_path)
-
-# Source the LoadData.R file
-library_path <- here::here("R", "loadData.R")
-source(library_path)
-
-# Source the plotMap.R file
-library_path <- here::here("R", "plotMap.R")
-source(library_path)
+cat("app.R:  Loading libraries\n")
+source("loadLibraries.R");loadLibraries() # Load all libraries
+source("loadData.R"); #Load all data
+source("fillCountryAccordingLatLon.R"); #Join more info about each country
+source("footer.R"); #Foot of page with information about creators, contact and versions
+source("renderMap.R"); #Function to plot the maps
 
 #Load data
- cat("app.R: Loading all data\n")
+ cat("app.R:  Loading all data\n")
  data <- loadData()
+ 
  taxon <- data$taxon
- assemblages <- data$assemblages
+ cat("app.R: Loaded ", nrow(taxon), "values from taxon\n")
+ assembleages <- data$assembleages
+ cat("app.R: Loaded ", nrow(assembleages), "values from assembleages\n")
  index <- data$index
+ cat("app.R: Indexed from both studies ", nrow(index), " values with id_study as main index\n")
+ index_filtered <- index %>% unique()
+ cat("app.R: Indexed from both studies ", nrow(index_filtered), " after filter\n")
+ 
+ #Fill empties values for countries and receive other interesting info from each one.
+ cat("app.R: Check error in countries and receive ISO3 code\n")
+ assembleages <- fillCountryAccordingLatLon(assembleages)
+ cat("app.R: There are", length(unique(assembleages$Country)), "different countries.\n")
 
-#Load shapes
- if (length(list.files("inst/gadm")) == 0) { #Check if map folder is empty or not. If it's empty, load shapes
-   cat("app.R: No map loaded. Let's download shapes in inst/gadm")
-   downloadAllShapes()
- } else{cat("app.R: All maps seems downloaded\n")}
-  
- #Main information
- selectGeneral <- selectGeneral(index,assemblages,taxon)  # Index main values  to plot general map
+ 
+ #Select interesting values from both dataframes  
+ # Select values from assembleages based on index
+ cat("loadData.R: Filterting assembleages \n")
+ assembleages_filtered <- assembleages %>% filter(id_study %in% index$id_study)
+ assembleages_filtered <- dplyr::select(assembleages_filtered, "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "Country", "ISO3")
+ assembleages_filtered <- assembleages_filtered %>% unique()
+ 
+ # Select values from taxon based on index
+ cat("loadData.R: Filterting taxon \n")
+ taxon_filtered <- taxon %>% filter(id_study %in% index$id_study)
+ taxon_filtered <- taxon_filtered %>% dplyr::select(id_comm, id_study,taxon_level , rank)
+ taxon_filtered <- taxon_filtered %>% unique()
+ 
+ 
+ #Main information after filters
+ cat("app.R: Filtering the data we need to reduce dataframe size \n")
+ cat("app.R: After filter, there are loaded ", nrow(taxon_filtered), "values from taxon\n")
+ head(taxon_filtered)
+
+ cat("app.R: After filter, there are loaded ", nrow(assembleages_filtered), "values from assembleages\n")
+ head(assembleages_filtered)
+ 
+ #Select info to show in World map
+   # Merge taxon_filtered and assemblages_filtered on id_study
+    dataWorldMap <- merge(taxon_filtered, assembleages_filtered, by = "id_study")
+   # Merge merged_df and index on id_study
+    dataWorldMap <- merge(dataWorldMap, index_filtered, by = "id_study")
+
+ 
+   # Print the first few rows of the final merged dataframe
+   head(final_merged_df)
+
+
  # Define a reactive value to store the map
- mapToPlot <- reactiveVal()
+  mapToPlot <- reactiveVal()
  
   # Menu --------------------------------------------------------------------
  # UI
@@ -63,17 +80,10 @@ source(library_path)
        fluidRow(
          column(width = 12,
                 selectInput("country", label = "Select country", 
-                            choices = c("All the World", unique(selectGeneral$country)),
+                            choices = c("All the World", as.character(unique(assembleages$ADMIN))),
                             selected = "All the World"),
                 textOutput("Select country")
          )
-       ),
-       fluidRow(
-         column(width = 12,
-                checkboxInput("showElevation", "Elevation", value = FALSE),
-                checkboxInput("showRivers", "Rivers", value = FALSE),
-                checkboxInput("showBorders", "Borders", value = FALSE)
-                ),
        ),
        # Botón para resetear contenido
        actionButton("reset", "reset")
@@ -90,72 +100,17 @@ source(library_path)
  
 
   
-  # Server
-  server <- function(input, output,session) {
-    # Enable shinyjs
-    shinyjs::hide("showElevation")
-    shinyjs::hide("showRivers")
-    shinyjs::hide("showBorders")
-    # Observe changes in showElevation and showRivers
-    observe({
-      if (input$country != "All the World") {
-          shinyjs::show("showRivers")
-          shinyjs::show("showElevation")
-          shinyjs::show("showBorders")
-        }
-    })
-      
-      
+# Server
+server <- function(input, output,session) {
 
-    # Create a reactive value to track changes in the input$country
-    observeEvent(c(input$country, input$showElevation, input$showRivers, input$showBorders), {
-      cat("app.R: Something has changed in country option\n")
-      # Check if the selected country is "All the World"
-      if (input$country == "All the World") {
-        cat("app.R: Plotting World map\n")
-        myMapToPlot <- renderMap(input, "general", selectGeneral)
-      } else {
-        cat("app.R: Searching data from", input$country, " map\n")
-        dataSelectedCountry <- selectCountry(selectGeneral, input$country)
-        # Check if we want a clean map, add rivers, or add elevations layers
-        if (input$showElevation) {
-          # Handle when showElevation is TRUE
-          myMapToPlot <- renderMap(input, "elevation", dataSelectedCountry)
-        } else if (input$showRivers) {
-          # Handle when showRivers is TRUE
-          myMapToPlot <- renderMap(input, "rivers", dataSelectedCountry)
-        } else if (input$showBorders) {
-          # Handle when showRivers is TRUE
-          myMapToPlot <- renderMap(input, "borders", dataSelectedCountry)
-        } else {
-          # Handle the default case when neither showElevation nor showRivers is TRUE
-          myMapToPlot <- renderMap(input, "country", dataSelectedCountry)
-        }
-      }
-      mapToPlot(myMapToPlot)  # Store the map in the reactive value
-    })
-
-    # Call the function with the required arguments
-    observeResetButton(session, input)
-    
-    # aquí va el código para que acctualice
-    run_code <- function() {
-      flush.console()
+  
+  #Call function to create my map and plot it
+  output$map <- renderLeaflet({
+    map <- renderMap(input, country, dataWorldMap)  
+    if (!is.null(map)) {
+      map
     }
-    
-    # Función para renderizar el título del mapa
-    output$TittleMap <- renderText({
-      run_code()
-    })
-    
-
-    # Use this function in your server.R
-    output$map <- renderLeaflet({
-      map <- mapToPlot()  # Retrieve the stored map
-      if (!is.null(map)) {
-        map
-      }
-    })
+  })
 }#End of server function
 
 shinyApp(ui, server)

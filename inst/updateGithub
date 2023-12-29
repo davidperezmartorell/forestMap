@@ -15,3 +15,10 @@ echo "# forestMap" >> README.md
  #Execute code
  shiny::runApp()
  runApp()
+ 
+ #Descargar version antigua de GITHUB que vuelve a version anterior
+ Se busca la version y se copia SHA
+ a9cb7df7f50ee67a2bed536088b2604bc196a45a
+git reset --soft a9cb7df7f50ee67a2bed536088b2604bc196a45a
+
+git revert a9cb7df7f50ee67a2bed536088b2604bc196a45a

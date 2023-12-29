@@ -1,0 +1,34 @@
+#' Download all assemblages values
+#' @param NULL No values input
+#' @return list(taxon = taxon, assemblages = assemblages, index = index) No values output
+#' @export
+#' @examples
+#' loadData()
+loadData <- function(){
+  library("readr")
+  library("dplyr")
+
+    
+  #First check if data exists in file
+    #Load taxons
+     cat("Loading taxon_clean with studies\n")
+     taxon <- read.csv("inst/tax_cleaned.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding="latin1")
+
+    #Load assembleages
+     cat("Loading taxon_clean with assemblages\n")
+     assemblages <- read.csv("inst/comm_nodist_plants.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding="latin1")
+
+
+    #Create index table with Common columns
+     #check if exists index.csv
+     cat("Loading index from taxon_clean and assemblages values\n")
+     index_taxon <- taxon %>% dplyr::select(id_study) %>% distinct()
+     index_assembleages <- assemblages %>% dplyr::select(id_study) %>% distinct()
+
+  # Create a list to hold the data frames
+   result_list <- list(taxon = taxon, assemblages = assemblages, index = index)
+  
+  # Return the list
+   return(result_list)
+}
+

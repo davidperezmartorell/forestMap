@@ -1,0 +1,24 @@
+echo "# forestMap" >> README.md
+  git init
+  git add README.md
+  git commit -m "First commit"
+  git branch -M main
+  git remote add origin https://github.com/davidperezmartorell/forestMap.git
+  git push -u origin main
+  
+  #Request to Oxygen to recreate files
+ roxygen2::roxygenise()
+ 
+ #See errors
+ rlang::last_trace(drop = FALSE)
+ 
+ #Execute code
+ shiny::runApp()
+ runApp()
+ 
+ #Descargar version antigua de GITHUB que vuelve a version anterior
+ Se busca la version y se copia SHA
+ a9cb7df7f50ee67a2bed536088b2604bc196a45a
+git reset --soft a9cb7df7f50ee67a2bed536088b2604bc196a45a
+
+git revert a9cb7df7f50ee67a2bed536088b2604bc196a45a
