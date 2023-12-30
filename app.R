@@ -59,43 +59,23 @@ source("renderMap.R"); #Function to plot the maps
    # Merge merged_df and index on id_study
     dataWorldMap <- merge(dataWorldMap, index_filtered, by = "id_study")
 
- 
-   # Print the first few rows of the final merged dataframe
-   head(final_merged_df)
-
-
  # Define a reactive value to store the map
   mapToPlot <- reactiveVal()
  
   # Menu --------------------------------------------------------------------
  # UI
- ui <- fluidPage(
-   useShinyjs(), # Agregar esta función para usar shinyjs
-   # Encabezado del código con un título
-   titlePanel(HTML("<h3>Plot maps from particular inventory with studies and inventories</h3>")),
-   sidebarLayout(
-     sidebarPanel(
-       width = 4, 
-       # Aquí escogemos el país según datos de archivo y tabla países
-       fluidRow(
-         column(width = 12,
-                selectInput("country", label = "Select country", 
-                            choices = c("All the World", as.character(unique(assembleages$ADMIN))),
-                            selected = "All the World"),
-                textOutput("Select country")
-         )
-       ),
-       # Botón para resetear contenido
-       actionButton("reset", "reset")
-     ), # Fin de sidebarPanel
-     mainPanel(
-       htmlOutput("TittleMap"),
-       leafletOutput("map"),
-       footer() 
-       # plotAll(input, option, selectGeneral)
-     )
-   ) # Fin de UI
- )
+  ui <- fluidPage(
+    useShinyjs(), # Agregar esta funciC3n para usar shinyjs
+    # Encabezado del cC3digo con un tC-tulo
+    titlePanel(HTML("<h3>Plot maps from particular inventory with studies and inventories</h3>")),
+    mainPanel(
+      htmlOutput("TittleMap"),
+      leafletOutput("map"),
+      footer() 
+      # plotAll(input, option, selectGeneral)
+    )
+  )
+  
  
  
 
@@ -106,7 +86,7 @@ server <- function(input, output,session) {
   
   #Call function to create my map and plot it
   output$map <- renderLeaflet({
-    map <- renderMap(input, country, dataWorldMap)  
+    map <- renderMap(input, dataWorldMap)  
     if (!is.null(map)) {
       map
     }

@@ -8,7 +8,7 @@
 #' plotAll(input,inputData)
 # Funtion plotMap ------------------------------------------------------
 # Render the map
-renderMap <- function(input, country, inputData) {
+renderMap <- function(input, inputData) {
   country <- input$country
   library("dplyr")
   library("ggplot2")
@@ -17,77 +17,61 @@ renderMap <- function(input, country, inputData) {
   library("raster")
   source("renderTittleMap.R"); #Function to plot the tittle of each map
 
-  cat("renderMap.R: Do you want ", country," map\n")
-  
-    if (country =="All the World")
-    {
-     cat("renderMap.R: Plot general map into the function\n")
-     map<-getGeneralMap(input,inputData)
-    }else
-    {
-      # Create the base map (countryMap)
-       cat("renderMap.R: Plot country map into the function\n") 
-       countryMap <- getCountryMap(input, inputData)
-       return(map)
-    }
-} #End of renderMap
-
-
-#Function to construct General map (Mapamundi)
- getGeneralMap<-function(input,inputData){
-   browser()
+ browser()
   summary_data <- inputData %>%
-    group_by(Country, exact_lat, exact_long) %>%
-    summarise(count_comm = n_distinct(id_comm),
-              count_study = n_distinct(id_study),
-              .groups = 'drop') %>%
+    group_by(Country, exact_lat, exact_long, study_year, id_study, id_comm) %>%
+    summarise(
+      count_study = n_distinct(id_study),
+      count_comm = n_distinct(id_comm),
+      stage = first(stage),  # Assuming it's the same for each group
+      study_common_taxon_clean = first(study_common_taxon_clean),  # Assuming it's the same for each group
+      .groups = 'drop'
+    ) %>%
     ungroup()
   
-  # Create a leaflet map
-  cat("renderMap.R: Plot general map into the function\n")
-  browser()
+  # Calculate centroid for each country
+  centroid_data <- summary_data %>%
+    group_by(Country) %>%
+    summarise(
+      centroid_lat = mean(exact_lat),
+      centroid_long = mean(exact_long),
+      total_count_study = sum(count_study),
+      total_count_comm = sum(count_comm),
+      .groups = 'drop'
+    ) %>%
+    ungroup()
+  
+  # Create a leaflet map with marker clusters
   map <- leaflet(data = summary_data) %>%
     addTiles() %>%
-    addCircleMarkers(
+    addMarkers(
       lat = ~exact_lat,
       lng = ~exact_long,
-      popup = ~paste("Country: ", summary_data$Country, "<br>",
-                     "Count Comm: ", summary_data$count_comm, "<br>",
-                     "Count Study: ", summary_data$count_study),
-      label = ~count_comm,  # You can change this to any variable you want to display as the label
-      color = "blue",
-      fillOpacity = 0.7,
-      radius = 3 + (summary_data$count_comm / max(summary_data$count_comm)) * 10
-    )
-  return(map)
-}
-
-#Function to construct country map (Only country)
- getCountryMap<-function(input,inputData){
-  myData <- selectCountry(inputData, input$country)
-  summary_data <- myData %>%
-    group_by(country, exact_lat, exact_long) %>%
-    summarise(count_comm = n_distinct(id_comm),
-              count_study = n_distinct(id_study),
-              .groups = 'drop') %>%
-    ungroup()
-  
-  # Create a leaflet map
-  cat("renderMap.R: Plot general map into the function\n")
-  map <- leaflet() %>%
-    addTiles() %>%
-    addCircleMarkers(
-      data = summary_data,
-      lat = ~exact_lat,
-      lng = ~exact_long,
-      popup = ~paste("Country: ", summary_data$country, "<br>",
-                     "Count Comm: ", summary_data$count_comm, "<br>",
-                     "Count Study: ", summary_data$count_study),
-      label = ~count_comm,
-      color = "red",
-      fillOpacity = 0.7,
-      radius = 3
+      popup = ~paste(
+        "Country: ", Country, "<br>",
+        "Study Year: ", study_year, "<br>",
+        "ID Study: ", id_study, "<br>",
+        "ID Comm: ", id_comm, "<br>",
+        "Count Study: ", count_study, "<br>",
+        "Count Comm: ", count_comm, "<br>",
+        "Stage: ", stage, "<br>",
+        "Study Common Taxon Clean: ", study_common_taxon_clean
+      ),
+      clusterOptions = markerClusterOptions(showCoverageOnHover = FALSE)
+    ) %>%
+    addMarkers(
+      data = centroid_data,
+      lat = ~centroid_lat,
+      lng = ~centroid_long,
+      popup = ~paste(
+        "Country: ", Country, "<br>",
+        "Total Count Study: ", total_count_study, "<br>",
+        "Total Count Comm: ", total_count_comm
+      )
     )
    return(map)
-  }
+ }
+
+
+
  
