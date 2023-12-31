@@ -11,6 +11,7 @@ source("loadData.R"); #Load all data
 source("fillCountryAccordingLatLon.R"); #Join more info about each country
 source("footer.R"); #Foot of page with information about creators, contact and versions
 source("renderMap.R"); #Function to plot the maps
+source("generateTableText.R"); #To write contents when we navigate the map
 
 #Load data
  cat("app.R:  Loading all data\n")
@@ -61,20 +62,38 @@ source("renderMap.R"); #Function to plot the maps
 
  # Define a reactive value to store the map
   mapToPlot <- reactiveVal()
+  map <- reactiveVal()
  
   # Menu --------------------------------------------------------------------
  # UI
   ui <- fluidPage(
-    useShinyjs(), # Agregar esta funciC3n para usar shinyjs
-    # Encabezado del cC3digo con un tC-tulo
+    useShinyjs(), 
+    
+    tags$head(
+      tags$style(HTML("body, html {height: 100%;margin: 0;} #map {height: 100%;} ")),
+      tags$script(src = "https://unpkg.com/leaflet-providers@1.12.0/leaflet-providers.js"),
+      tags$link(rel = "stylesheet", href = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css")
+    ),
+    
     titlePanel(HTML("<h3>Plot maps from particular inventory with studies and inventories</h3>")),
-    mainPanel(
-      htmlOutput("TittleMap"),
-      leafletOutput("map"),
-      footer() 
-      # plotAll(input, option, selectGeneral)
+    
+    tabsetPanel(
+      tabPanel("Map", 
+               fluidRow(
+                 column(12, htmlOutput("TittleMap")),
+                 column(12, leafletOutput("map")),
+                 column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>")))
+               )
+      ),
+      
+      tabPanel("Footer",
+               mainPanel(
+                 footer()
+               )
+      )
     )
   )
+  
   
  
  
@@ -82,11 +101,29 @@ source("renderMap.R"); #Function to plot the maps
   
 # Server
 server <- function(input, output,session) {
-
+  browser()
+  # Observe click events on the map
+  observeEvent(input$map_marker_click, {
+    # Extract information from the clicked marker
+    click <- input$map_marker_click
+    if (!is.null(click)) {
+      # Generate and update the table text
+      tableText <- generateTableText(dataWorldMap)
+      
+      # Update the content of the belowTitle div with the table text
+      shinyjs::html("belowTitle", tableText)
+      
+    }
+  })
   
-  #Call function to create my map and plot it
+  output$clickedInfo <- renderPrint({
+    # Print the clicked popup information
+    print(clickedIconData$data)
+  })
+  
+  # Call function to create my map and plot it
   output$map <- renderLeaflet({
-    map <- renderMap(input, dataWorldMap)  
+    map <- renderMap(dataWorldMap)  
     if (!is.null(map)) {
       map
     }

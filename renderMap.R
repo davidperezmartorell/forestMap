@@ -1,6 +1,5 @@
 #' Plot the map
 #' @param input Input values
-#' @param country Type of map. General(for mapamundi), country(view coutry borders, elevations, rivers and studies points)
 #' @param selectGeneral Calues to plot
 #' @return man Return the map we want to plot
 #' @export
@@ -8,16 +7,18 @@
 #' plotAll(input,inputData)
 # Funtion plotMap ------------------------------------------------------
 # Render the map
-renderMap <- function(input, inputData) {
-  country <- input$country
+renderMap <- function(inputData) {
+  browser()
+
   library("dplyr")
   library("ggplot2")
   library("leaflet")
   library("sf")
   library("raster")
   source("renderTittleMap.R"); #Function to plot the tittle of each map
+  # Create a reactive expression for popup information
+  popupInfo <- reactiveVal(NULL)
 
- browser()
   summary_data <- inputData %>%
     group_by(Country, exact_lat, exact_long, study_year, id_study, id_comm) %>%
     summarise(
@@ -40,10 +41,11 @@ renderMap <- function(input, inputData) {
       .groups = 'drop'
     ) %>%
     ungroup()
+
   
-  # Create a leaflet map with marker clusters
+# Create a leaflet map with marker clusters
   map <- leaflet(data = summary_data) %>%
-    addTiles() %>%
+    addProviderTiles("Esri.WorldImagery") %>%
     addMarkers(
       lat = ~exact_lat,
       lng = ~exact_long,
@@ -58,17 +60,8 @@ renderMap <- function(input, inputData) {
         "Study Common Taxon Clean: ", study_common_taxon_clean
       ),
       clusterOptions = markerClusterOptions(showCoverageOnHover = FALSE)
-    ) %>%
-    addMarkers(
-      data = centroid_data,
-      lat = ~centroid_lat,
-      lng = ~centroid_long,
-      popup = ~paste(
-        "Country: ", Country, "<br>",
-        "Total Count Study: ", total_count_study, "<br>",
-        "Total Count Comm: ", total_count_comm
-      )
     )
+
    return(map)
  }
 
