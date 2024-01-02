@@ -5,14 +5,13 @@
 #' @examples
 #' generateTableText(inputData)
 generateTableText <- function(dataWorldMap) {
+
   #Select interesting values to print in a table
   dataWorldMap <- dataWorldMap[, c("id_study", "id_comm", "taxon_level.x", "rank", "study_year", "stage", "study_common_taxon_clean", "taxon_level.y")]
   dataWorldMap <- dataWorldMap[!duplicated(dataWorldMap), ]
   
-  
   # Get column names from the data frame
   col_names <- colnames(dataWorldMap)
-  
   # Create the title with the extracted values
   id_study_values <- unique(dataWorldMap$id_study)
   id_comm_values <- unique(dataWorldMap$id_comm)
@@ -29,7 +28,7 @@ generateTableText <- function(dataWorldMap) {
   tableHTML <- paste(tableHTML, "<tr>", paste("<th>", col_names, "</th>", collapse = ""), "</tr>", sep = "")
   
   # Add table rows
-  for (i in 1:nrow(dataWorldMap)) {
+  for (i in nrow(dataWorldMap)) {
     tableHTML <- paste(tableHTML, "<tr>", paste("<td>", unlist(dataWorldMap[i, ]), "</td>", collapse = ""), "</tr>", sep = "")
   }
   

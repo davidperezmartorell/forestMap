@@ -101,20 +101,45 @@ source("generateTableText.R"); #To write contents when we navigate the map
   
 # Server
 server <- function(input, output,session) {
-  browser()
+
+  # Create reactiveValues to store map and clicked marker information
+  map_info <- reactiveVal(NULL)
+  
+  # # Observe changes in the dataWorldMap and update map_info
+  # observe({
+  #   browser()
+  #   map_info(renderMap(dataWorldMap))
+  # })
+  
   # Observe click events on the map
   observeEvent(input$map_marker_click, {
-    # Extract information from the clicked marker
     click <- input$map_marker_click
-    if (!is.null(click)) {
-      # Generate and update the table text
-      tableText <- generateTableText(dataWorldMap)
-      
-      # Update the content of the belowTitle div with the table text
-      shinyjs::html("belowTitle", tableText)
-      
+    infoFromIDComm <- filter(dataWorldMap, id_comm == "Addo-Fordjour 2019_Liana_Sit5_NA")
+    tableText <- generateTableText(infoFromIDComm)
+    shinyjs::html("belowTitle", tableText)
+  
+  })
+  
+  
+  
+  
+  
+  
+  output$popupInfo <- renderText({
+    if (!is.null(marker_info$info)) {
+      # You can customize how you want to display the information
+      # For example, you may want to format it as a table or list
+      paste("Clicked Marker Info:", toString(marker_info$info))
+    } else {
+      "Click a marker to view information"
     }
   })
+  
+  
+  
+  
+  
+  
   
   output$clickedInfo <- renderPrint({
     # Print the clicked popup information
@@ -123,7 +148,10 @@ server <- function(input, output,session) {
   
   # Call function to create my map and plot it
   output$map <- renderLeaflet({
-    map <- renderMap(dataWorldMap)  
+    map_info  <- renderMap(dataWorldMap)  
+    map <- map_info$map
+    clickedInfo <- map_info$data
+
     if (!is.null(map)) {
       map
     }
