@@ -113,8 +113,10 @@ server <- function(input, output,session) {
   
   # Observe click events on the map
   observeEvent(input$map_marker_click, {
+    browser()
     click <- input$map_marker_click
-    infoFromIDComm <- filter(dataWorldMap, id_comm == "Addo-Fordjour 2019_Liana_Sit5_NA")
+    infoFromIDComm <- filter(dataWorldMap, id_comm == click$id)
+    cat("APP.R: Has been clicked id_comm ", click$id)
     tableText <- generateTableText(infoFromIDComm)
     shinyjs::html("belowTitle", tableText)
   
