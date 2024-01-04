@@ -12,6 +12,9 @@ source("fillCountryAccordingLatLon.R"); #Join more info about each country
 source("footer.R"); #Foot of page with information about creators, contact and versions
 source("renderMap.R"); #Function to plot the maps
 source("generateTableText.R"); #To write contents when we navigate the map
+source("commRelated.R"); #Search info about id_comm Communities related to the id_comm choosen in map
+source("studyRelated.R"); #Search info about study related to the id_comm choosen in map
+source("givemeIdStudy.R"); #Rerutn id_study related to id_
 
 #Load data
  cat("app.R:  Loading all data\n")
@@ -85,6 +88,12 @@ source("generateTableText.R"); #To write contents when we navigate the map
                  column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>")))
                )
       ),
+      tabPanel("Study",
+               fluidRow(
+                 column(12, div(id = "contentCommRelated", HTML("<h3>Information about ID_COMM clicked</h3>"))),
+                 DT::dataTableOutput("studyTable")
+               )
+      ),
       
       tabPanel("Footer",
                mainPanel(
@@ -113,15 +122,31 @@ server <- function(input, output,session) {
   
   # Observe click events on the map
   observeEvent(input$map_marker_click, {
-    browser()
     click <- input$map_marker_click
     infoFromIDComm <- filter(dataWorldMap, id_comm == click$id)
-    cat("APP.R: Has been clicked id_comm ", click$id)
+    cat("APP.R: Has been clicked id_comm ", click$id, "\n")
     tableText <- generateTableText(infoFromIDComm)
     shinyjs::html("belowTitle", tableText)
-  
-  })
-  
+    
+
+    #Table with unique id_comm value
+    tableText2 <- commRelated(taxon, assembleages,click$id)
+      shinyjs::html("contentCommRelated", tableText2)
+      shinyjs::html("belowTitle", tableText)
+      output$commRelatedTable <- DT::renderDataTable({
+        datatable(tableText2, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$captiontags$h1(paste("Info from Community clicked: ", click$id)))
+      })
+
+    #Table with id_study related to id_comm value and others id:_comm related
+      idStudyUnique <- givemeIdStudy(taxon, click$id)  # Request id_study
+      tableText3 <- studyRelated(taxon, assembleages,click$id)
+
+      output$studyTable <- DT::renderDataTable({
+        datatable(tableText3, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1(paste("Info from Study related ", idStudyUnique))))
+      })
+      
+
+})
   
   
   

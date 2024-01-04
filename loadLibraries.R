@@ -22,6 +22,8 @@ library("terra")
 library("randomForest")
 #install.packages("DT", repos = "http://cran.us.r-project.org")
 library("DT") #To create tables in result format under the plot
+library("knitr") #Toc reate exciting tables
+library("kableExtra") #Toc reate exciting tables
 
 
 cat("loadLibraries.R: Libraries has been loaded\n")
