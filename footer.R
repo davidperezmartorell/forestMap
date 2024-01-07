@@ -10,7 +10,7 @@
 footer <- function(){
 # Pie de pagina -----------------------------------------------------------
 fluidRow(
-  column(12, HTML("<h6> Mapa plote de inventarios forestales bsato en datos de taxon y assembleages proporcionado por Veornica Cruz</h6>")),
+  column(12, HTML("<h6> FORESTMAP  Mapa de inventarios forestales basado en datos de tablas taxon y assembleages proporcionado por doctora Veronica Cruz</h6>")),
   column(12, HTML("<h6> Autor David Perez Martorell davidperezmartorell@gmail.com</h6<>")),
   column(12, HTML("<h6> Trabajo TFM para el Master Restauraci??n de Ecosistemaas</h6>")),
   column(12, HTML("<h6> Version 1.0.0 01/12/2023 En pruebas.Creaci??n de entorno, formulario y mapa base</h6>")),
@@ -20,6 +20,7 @@ fluidRow(
   column(12, HTML("<h6> Version 1.0.5 16/12/2023 Carga de mapa de r??os/h6>")),
   column(12, HTML("<h6> Version 1.0.6 16/12/2023 Carga de mapa de r??os/h6>")),
   column(12, HTML("<h6> Version 1.1.0 30/12/2023 Reconversi??n de programa de paquete a aplicaci??n y omitir layers/h6>")),
+  column(12, HTML("<h6> Version 1.1.1 07/01/2024 Se publican datos del idcomm seleccionado y los id_study con datis comunes y individuales/h6>")),
 
   
   

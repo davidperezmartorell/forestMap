@@ -69,39 +69,40 @@ source("givemeIdStudy.R"); #Rerutn id_study related to id_
  
   # Menu --------------------------------------------------------------------
  # UI
-  ui <- fluidPage(
-    useShinyjs(), 
-    
-    tags$head(
-      tags$style(HTML("body, html {height: 100%;margin: 0;} #map {height: 100%;} ")),
-      tags$script(src = "https://unpkg.com/leaflet-providers@1.12.0/leaflet-providers.js"),
-      tags$link(rel = "stylesheet", href = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css")
-    ),
-    
-    titlePanel(HTML("<h3>Plot maps from particular inventory with studies and inventories</h3>")),
-    
-    tabsetPanel(
-      tabPanel("Map", 
-               fluidRow(
-                 column(12, htmlOutput("TittleMap")),
-                 column(12, leafletOutput("map")),
-                 column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>")))
-               )
-      ),
-      tabPanel("Study",
-               fluidRow(
-                 column(12, div(id = "contentCommRelated", HTML("<h3>Information about ID_COMM clicked</h3>"))),
-                 DT::dataTableOutput("studyTable")
-               )
+    ui <- fluidPage(
+      useShinyjs(), 
+      
+      tags$head(
+        tags$style(HTML("body, html {height: 100%;margin: 0;} #map {height: 100%;} ")),
+        tags$script(src = "https://unpkg.com/leaflet-providers@1.12.0/leaflet-providers.js"),
+        tags$link(rel = "stylesheet", href = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css")
       ),
       
-      tabPanel("Footer",
-               mainPanel(
-                 footer()
-               )
+      titlePanel(HTML("<h3>FORESTMAP Plot maps from particular inventory with studies and inventories</h3>")),
+      
+      tabsetPanel(
+        tabPanel("Map", 
+                 fluidRow(
+                   column(12, htmlOutput("TittleMap")),
+                   column(12, leafletOutput("map")),
+                   column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>")))
+                 )
+        ),
+        tabPanel("Study",
+                 fluidRow(
+                   column(12, div(id = "contentCommRelated", HTML("<h3>Information about ID_COMM clicked</h3>"))),
+                   DT::dataTableOutput("firstTable"),  # Output for the first table with common values
+                   DT::dataTableOutput("studyTable")   # Output for the second table with different values
+                 )
+        ),
+        
+        tabPanel("Footer",
+                 mainPanel(
+                   footer()
+                 )
+        )
       )
     )
-  )
   
   
  
@@ -114,18 +115,12 @@ server <- function(input, output,session) {
   # Create reactiveValues to store map and clicked marker information
   map_info <- reactiveVal(NULL)
   
-  # # Observe changes in the dataWorldMap and update map_info
-  # observe({
-  #   browser()
-  #   map_info(renderMap(dataWorldMap))
-  # })
-  
   # Observe click events on the map
   observeEvent(input$map_marker_click, {
     click <- input$map_marker_click
     infoFromIDComm <- filter(dataWorldMap, id_comm == click$id)
     cat("APP.R: Has been clicked id_comm ", click$id, "\n")
-    tableText <- generateTableText(infoFromIDComm)
+      tableText <- generateTableText(infoFromIDComm)
     shinyjs::html("belowTitle", tableText)
     
 
@@ -138,13 +133,22 @@ server <- function(input, output,session) {
       })
 
     #Table with id_study related to id_comm value and others id:_comm related
-      idStudyUnique <- givemeIdStudy(taxon, click$id)  # Request id_study
-      tableText3 <- studyRelated(taxon, assembleages,click$id)
+    idStudyUnique <- givemeIdStudy(taxon, click$id)  # Request id_study
+    tableText3_received <- studyRelated(taxon, assembleages,click$id)
+    tableText3<-tableText3_received$df  #Interesting values with different contents
+    assemblagesRemoved <- tableText3_received$assemblagesRemoved #Common values in all the id_comms from that id_study
+    
+     
+    output$firstTable <- DT::renderDataTable({
+      # Render the first table (assemblagesRemoved)
+      datatable(assemblagesRemoved, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1(paste("Info from Study related ", idStudyUnique))))
+    })
+    
+    output$studyTable <- DT::renderDataTable({
+      # Render the second table (tableText3)
+      datatable(tableText3, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1("Info from each id_comm")))
+    })
 
-      output$studyTable <- DT::renderDataTable({
-        datatable(tableText3, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1(paste("Info from Study related ", idStudyUnique))))
-      })
-      
 
 })
   
