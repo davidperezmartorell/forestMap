@@ -21,6 +21,7 @@ fluidRow(
   column(12, HTML("<h6> Version 1.0.6 16/12/2023 Carga de mapa de r??os/h6>")),
   column(12, HTML("<h6> Version 1.1.0 30/12/2023 Reconversi??n de programa de paquete a aplicaci??n y omitir layers/h6>")),
   column(12, HTML("<h6> Version 1.1.1 07/01/2024 Se publican datos del idcomm seleccionado y los id_study con datis comunes y individuales/h6>")),
+  column(12, HTML("<h6> Version 1.1.2 08/01/2024 Se agregan gr??ficos donde se muetra relacion aundancia y riqueza respecto a??os con las disturbances/h6>")),
 
   
   

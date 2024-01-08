@@ -7,7 +7,7 @@
 #' @examples
 #' studyRelated(id_comm)
 studyRelated <- function(taxon,assemblages, identifier) {
-  
+
   #Search id_study relater
   idStudyUnique <- givemeIdStudy(taxon,identifier)
   taxon <- filter(taxon, id_study == idStudyUnique)
@@ -18,11 +18,11 @@ studyRelated <- function(taxon,assemblages, identifier) {
   # Select interesting values from assemblages to print in a table
   assemblages <- assemblages_ori %>% 
     filter(id_study == idStudyUnique) %>%
-    dplyr::select(-id,-id_comm, -database, -id_study, -id_study_ori, -citation , -study, -site, -plot, -exact_lat, -exact_long, -historic_impact, -notes, -country, -lon, -lat, -ScaleRank, -LabelRank, -FeatureCla,
+    dplyr::select( -plot, -exact_lat, -exact_long,  -country,  -ScaleRank, -LabelRank, -FeatureCla,
                   -SOV_A3, -ADM0_DIF, -ADM0_DIF, -LEVEL, -TYPE, -ADMIN, -ADM0_A3, -GEOU_DIF, -GEOUNIT, -GU_A3, -SU_DIF, -SUBUNIT, -SU_A3 , -NAME , -ABBREV , -POSTAL , -NAME_FORMA ,
                   -TERR_, -NAME_SORT, -MAP_COLOR, -POP_EST, -GDP_MD_EST, -FIPS_10_, -ISO_A2, -ISO_A3, -ISO_N3, -ISO3, -LON, -LAT, -ISO3.1, -ADMIN.1, -REGION, -continent, -GEO3major ,
                   -GEO3, -IMAGE24, -GLOCAF, -Stern, -SRESmajor, -SRES, -GBD, -AVOIDnumeric, -AVOIDname, -LDC, -SID, -LLDC, -Country)
-  
+                  #-lon, -lat,-id,-id_comm, -database, -id_study, -id_study_ori, -citation , -study, -site,-historic_impact, -notes,
 
   
       # Function to select common values in the study and all id_comm
@@ -42,7 +42,7 @@ studyRelated <- function(taxon,assemblages, identifier) {
       
   
   # Convert assemblages to an interactive datatable
-  datatable_obj <- datatable(assemblages, options = list(dom = 't', pageLength = 10, scrollX = TRUE))
+  datatable_obj <- datatable(assemblages, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
 
   
   # Extract the data frame from the datatable object

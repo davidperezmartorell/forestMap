@@ -42,7 +42,7 @@
       ) %>%
       ungroup()
   
-    
+
   # Create a leaflet map with marker clusters
     map <- leaflet(data = summary_data) %>%
       addProviderTiles("Esri.WorldImagery") %>%

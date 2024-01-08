@@ -15,6 +15,7 @@ source("generateTableText.R"); #To write contents when we navigate the map
 source("commRelated.R"); #Search info about id_comm Communities related to the id_comm choosen in map
 source("studyRelated.R"); #Search info about study related to the id_comm choosen in map
 source("givemeIdStudy.R"); #Rerutn id_study related to id_
+source("getPlotRichness.R"); #Plot graphics abund and richens by age
 
 #Load data
  cat("app.R:  Loading all data\n")
@@ -85,7 +86,9 @@ source("givemeIdStudy.R"); #Rerutn id_study related to id_
                  fluidRow(
                    column(12, htmlOutput("TittleMap")),
                    column(12, leafletOutput("map")),
-                   column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>")))
+                   column(12, div(id = "belowTitle", HTML("<h3>Below Title</h3>"))),
+                   column(12, div(id = "belowTitle", HTML("<h3>Richness and Abundance graph respect ages of inventories</h3>"))),
+                   column(12, plotOutput("plotRichness"))
                  )
         ),
         tabPanel("Study",
@@ -129,7 +132,7 @@ server <- function(input, output,session) {
       shinyjs::html("contentCommRelated", tableText2)
       shinyjs::html("belowTitle", tableText)
       output$commRelatedTable <- DT::renderDataTable({
-        datatable(tableText2, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$captiontags$h1(paste("Info from Community clicked: ", click$id)))
+        datatable(tableText2, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$captiontags$h1(paste("Info from Community clicked: ", click$id)))
       })
 
     #Table with id_study related to id_comm value and others id:_comm related
@@ -141,14 +144,20 @@ server <- function(input, output,session) {
      
     output$firstTable <- DT::renderDataTable({
       # Render the first table (assemblagesRemoved)
-      datatable(assemblagesRemoved, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1(paste("Info from Study related ", idStudyUnique))))
+      datatable(assemblagesRemoved, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1(paste("Info from Study related ", idStudyUnique))))
     })
     
     output$studyTable <- DT::renderDataTable({
       # Render the second table (tableText3)
-      datatable(tableText3, options = list(dom = 't', pageLength = 10, scrollX = TRUE), caption = tags$caption(tags$h1("Info from each id_comm")))
+      datatable(tableText3, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1("Info from each id_comm")))
     })
 
+    output$plotRichness <- renderPlot({
+      # Call your function to get the richness plot
+      richness_plot <- getPlotRichness(assembleages , idStudyUnique)
+      # Use the ggplot object directly
+      print(richness_plot)
+    })
 
 })
   
