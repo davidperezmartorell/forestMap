@@ -30,7 +30,7 @@ fluidRow(
   column(12, HTML("<h6> Version 1.1.8 22/01/2024 Lista de especies conertida en matriz segun comunicades de cada estudio y otros cambios menores/h6>")),
   column(12, HTML("<h6> Version 1.2.0 15/02/2024 Cambios en datos combinados, creaci??n de nuevos gr??ficos, nuevas pesta??as, filtrados/h6>")),
   column(12, HTML("<h6> Version 1.2.1 22/02/2024 Agrego 2 capas en mapa principal para ver por stage o disturbance/h6>")),
-  
+  column(12, HTML("<h6> Version 1.2.2 08/03/2024 Actualizo entrada de datos/h6>")),
   
 )#Fin pie de pagina fluidRow
 }

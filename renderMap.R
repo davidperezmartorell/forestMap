@@ -7,149 +7,118 @@
 #' plotAll(input,inputData)
 # Funtion plotMap ------------------------------------------------------
 # Render the map
+
 renderMap <- function(inputData) {
-  #Code to test function
+  library("dplyr")
+  library("leaflet")
+  library("sf")
+  library("rnaturalearth")
+  
+  # Code to test function
   # assembleages <- read.csv("inst/comm_nodist_plants.csv", sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
-  # assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean")
+  # assembleages_filtered <- dplyr::select(assembleages, "id", "id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", 
+  #                                        "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean", "age", "n_comm_available",
+  #                                        "metric", "citation", "database")
   # assembleages_filtered <- assembleages_filtered %>% unique()
-  # inputData<-assembleages_filtered
-  # 
-  # library("dplyr")
-  # library("leaflet")
-  # library("sf")
-  # library("rnaturalearth")
-  
-  
-  summary_data <- inputData %>%
-    group_by(id, country, exact_lat, exact_long, study_year, id_study) %>%
-    summarise(
-      count_study = n_distinct(id_study),
-      stage = first(stage),
-      disturbance1_age_clean = first(disturbance1_age_clean),
-      study_common_taxon_clean = first(study_common_taxon_clean),
-      .groups = 'drop'
+  # inputData <- assembleages_filtered
+
+  inputData2 <- inputData %>%
+    group_by(id_study) %>%
+    mutate(
+      possible_alternatives = {
+        stages <- unique(stage[order(age, decreasing = TRUE)])
+        if ("reference" %in% stages) {
+          stages <- c("reference", stages[stages != "reference"])
+        }
+        paste(stages, collapse = ", ")
+      }
     ) %>%
-    ungroup()
+    ungroup() %>%
+    select(-id, -age, -disturbance1_age_clean, -stage)
+  
   
   # Convert 'exact_lat' and 'exact_long' columns to numeric, handling non-numeric values
-  summary_data$exact_lat <- as.numeric(summary_data$exact_lat)
-  summary_data$exact_long <- as.numeric(summary_data$exact_long)
+  inputData2$exact_lat <- as.numeric(inputData2$exact_lat)
+  inputData2$exact_long <- as.numeric(inputData2$exact_long)
   
-  # Handle any NAs or non-numeric values
-  summary_data$exact_lat[is.na(summary_data$exact_lat) | !is.numeric(summary_data$exact_lat)] <- NA
-  summary_data$exact_long[is.na(summary_data$exact_long) | !is.numeric(summary_data$exact_long)] <- NA
-  summary_data <- filter(summary_data, stage != "0")
   # Load world countries data
   world <- ne_countries(scale = "medium", returnclass = "sf")
   # Set CRS to WGS84
   world <- st_set_crs(world, 4326)  # 4326 is the EPSG code for WGS84
   
-  # Mutate inputData based on disturbance1_age_clean
-  summary_data <- summary_data %>%
-    mutate(disturbance_category = case_when(
-      disturbance1_age_clean %in% c("burning", "burning/logging/farming", "burning/farming") ~ "burning",
-      disturbance1_age_clean == "mining" ~ "mining",
-      disturbance1_age_clean %in% c("logging", "logging/farming", "forest uses", "forest uses/logging") ~ "forest",
-      disturbance1_age_clean %in% c("cultivation", "animal farming","farming", "plantation", "plantation/logging") ~ "cultivation",
-      TRUE ~ "none"
-    ))
-
+  
+  summary_data <- inputData2 %>%
+    group_by(id_study) %>%
+    summarise(
+      count_study = n_distinct(id_study),
+      possible_alternatives = first(possible_alternatives),
+      study_common_taxon_clean = first(study_common_taxon_clean),
+      metric = first(metric),
+      citation = first(citation),
+      database = first(database),
+      n_comm_available = n_distinct(n_comm_available),
+      exact_lat = first(exact_lat),  # Include exact_lat column
+      exact_long = first(exact_long),  # Include exact_long column
+      study_year = first(study_year),
+      .groups = 'drop'
+    )
+  
+  summary_data$exact_lat <- as.numeric(summary_data$exact_lat)
+  summary_data$exact_long <- as.numeric(summary_data$exact_long)
+  
 
   # Create a leaflet map with marker clusters
-  # Create a leaflet map with marker clusters
-  map <- leaflet() %>%
+  map <- leaflet(data = summary_data) %>%
     addProviderTiles("Esri.WorldImagery") %>%
-    addPolygons(
-      data = world,
-      fillColor = NA,
-      color = "black",
-      weight = 1,
-      group = "Base Map"
-    ) %>%
     addCircleMarkers(
-      data = summary_data,  # Use summary_data directly
       lat = ~exact_lat,
       lng = ~exact_long,
       layerId = ~id_study,
-      radius = 20,
+      radius = 10,
+      fillColor = ~case_when(
+        possible_alternatives == "recovering" ~ "green",
+        possible_alternatives == "reference, recovering" ~ "orange",
+        possible_alternatives == "recovering, disturbed" ~ "purple",
+        possible_alternatives == "reference, recovering, disturbed" ~ "brown"
+      ),
       fillOpacity = 1,
       color = "black",
-      fillColor = ~case_when(
-        stage == "recovering" ~ "green",
-        stage == "reference" ~ "blue",
-        stage == "disturbed" ~ "darkred",
-        stage == "protection" ~ "yellow"
-      ),
+      stroke = TRUE,
       popup = ~paste(
-        "Country: ", country, "<br>",
-        "Year of study: ", study_year, "<br>",
-        "Name of Study group: ", id_study, "<br>",
-        "Number of studies: ", count_study, "<br>",
-        "Stage: ", stage, "<br>",
-        "Study Common Taxon Clean: ", study_common_taxon_clean,
-        "Disturbance: ", disturbance1_age_clean
+        "Year: ", study_year, "<br>",
+        "Number of assemblages: ", n_comm_available, "<br>",
+        "Study: ", id_study, "<br>",
+        "Stage through the time: ", possible_alternatives, "<br>",
+        "Common taxon: ", study_common_taxon_clean, "<br>",
+        "Metric: ", metric, "<br>",
+        "Source: ", citation, "<br>",
+        "Origin database: ", database, "<br>"
       ),
-      group = "Stage Markers",
-      clusterOptions = markerClusterOptions()
-    ) %>%
-    addCircleMarkers(
-      data = summary_data,  # Use summary_data directly
-      lat = ~exact_lat,
-      lng = ~exact_long,
-      layerId = ~id_study,
-      radius = 20,
-      fillOpacity = 1,
-      color = "black",
-      fillColor = ~case_when(
-        disturbance1_age_clean %in% c("burning", "burning/logging/farming", "burning/farming") ~ "pink",
-        disturbance1_age_clean == "mining" ~ "darkblue",
-        disturbance1_age_clean %in% c("logging", "logging/farming", "forest uses", "forest uses/logging") ~ "brown",
-        disturbance1_age_clean %in% c("cultivation", "animal farming","farming", "plantation", "plantation/logging") ~ "white",
-        TRUE ~ "darkred"
-      ),
-      popup = ~paste(
-        "Country: ", country, "<br>",
-        "Year of study: ", study_year, "<br>",
-        "Name of Study group: ", id_study, "<br>",
-        "Number of studies: ", count_study, "<br>",
-        "Stage: ", stage, "<br>",
-        "Study Common Taxon Clean: ", study_common_taxon_clean
-      ),
-      group = "Disturbance Age Clean Markers",
-      clusterOptions = markerClusterOptions()
+      clusterOptions = markerClusterOptions(showCoverageOnHover = FALSE)
     ) %>%
     addLegend(
       position = "bottomright",
-      colors = c("green", "blue", "darkred", "yellow"),
-      labels = c("Recovering", "Reference", "Disturbed", "Protection"),
-      title = "Stage",
-      opacity = 1
-    ) %>%
-    addLegend(
-      position = "bottomright",
-      colors = c("pink", "darkblue", "brown", "white", "darkred"),
-      labels = c("Burning", "Mining", "Logging", "Cultivation", "Others"),
-      title = "Disturbance",
+      colors = c("green", "orange", "purple", "brown"),
+      labels = c("Recovering", "Reference, Recovering", "Recovering, Disturbed", "Reference, Recovering, Disturbed"),
+      title = "Stages",
       opacity = 1
     )
   
   
-  # Add layer control
-  map <- map %>%
-    addLayersControl(
-      baseGroups = c("Base Map"),
-      overlayGroups = c("Stage Markers", "Disturbance Age Clean Markers"),
-      options = layersControlOptions(collapsed = FALSE)
-    )
+  
+  
   
   map <- map %>%
     setView(lng = mean(summary_data$exact_long, na.rm = TRUE), 
             lat = mean(summary_data$exact_lat, na.rm = TRUE), 
-            zoom = 3)
-  
-  map
+            zoom = 3) 
+
   return(list(map = map, data = summary_data))
 }
+
+
+
+
 
 
 

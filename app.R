@@ -19,6 +19,7 @@ source("getRichnessPlot.R"); #Plot graphics abund and richness by age
 source("speciesStudyMatrix.R"); #Create table with all species related to clicked study
 source("givemeGbifInfo.R"); #Search info in GBIB about each specie
 source("givemeAbundance.R"); #Returns abundance from assembleages ad in_comm for each taxon_clean
+source("filterDataByIdstudy.R"); #Returns data from taxon and assembleages filtered by id_study to plot values
 source("getInventoryPlot.R"); #Returns plot with inventory in that study and abundancy by family
 source("getInventoryPlotByClass.R"); #Returns plot with inventory in that study and abundancy by class
 source("getInventoryPlotByOrder.R"); #Returns plot with inventory in that study and abundancy by Order
@@ -48,7 +49,8 @@ source("getplotRecoveringConditionGeneral.R"); #Returns Plot with relation recov
  #Select interesting values from both dataframes  
  cat("loadData.R: Filterting assembleages \n")
  
- assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean")
+ assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean",
+                                        "country", "disturbance1_age_clean", "age", "n_comm_available", "metric", "citation", "database")
  assembleages_filtered <- assembleages_filtered %>% unique()
  
  cat("app.R: After filter, there are loaded ", nrow(assembleages_filtered), "values from assembleages\n")
@@ -176,7 +178,7 @@ source("getplotRecoveringConditionGeneral.R"); #Returns Plot with relation recov
  
 # Server
 server <- function(input, output,session) {
-
+  
   # Create reactiveValues to store map and clicked marker information
   map_info <- reactiveVal(NULL)
   
@@ -194,19 +196,19 @@ server <- function(input, output,session) {
 
     #React when is clicked some tear with some study
       #Extract result
-        result <- studyClicked(assembleages, click$id)
-        studyClicked <- result$assemblagesCommon
-        studiesRelated <- result$assemblagesUnique
-   
+        
          result <- studyClicked(assembleages, click$id)
          studyClickedData <- result$assemblagesCommon
          studiesRelatedData <- result$assemblagesUnique
-         
+        
+      #Extract data for study ploats   
+         dataTaxonAsembleagesByStudy <- filterDataByIdstudy(taxon,assembleages,infoFromIDStudy$id_study)
 
     #Create table according study clicked with general and particular contents
-       output$studyClicked <- renderDT({
-         DT::datatable(studyClickedData)
-       })
+         output$studyClicked <- renderDT({
+           datatable(studyClickedData, escape = FALSE)
+           
+         })
        
        output$studiesRelated <- renderDT({
          DT::datatable(studiesRelatedData)
@@ -236,10 +238,10 @@ server <- function(input, output,session) {
             })
 
         #React when is clicked Graphics with plot
-        output$plotRichness <- renderPlot({
+          output$plotRichness <- renderPlot({
           # Call your function to get the richness plot
           cat("getRichnessPlot.R: Creating graphics by Richness\n")
-          richnessPlot <- getRichnessPlot(assembleages , click$id)
+          richnessPlot <- getRichnessPlot(dataTaxonAsembleagesByStudy)
           # Use the ggplot object directly
           richnessPlot
         })
@@ -247,26 +249,31 @@ server <- function(input, output,session) {
                   
         output$plotInventory <- renderPlotly({
             cat("getRichnessPlot.R: Creating graphics by Richness\n")
-            inventoryPlot <- getInventoryPlot(taxon, assembleages, click$id)
-            inventoryPlot
+            inventoryPlot <- getInventoryPlot(dataTaxonAsembleagesByStudy)
+             inventoryPlot
           })
     
        output$plotInventoryByClass <- renderPlotly({
             cat("getInventoryPlotByClass.R: Creating graphics by Class\n")
-            inventoryPlotByClass <- getInventoryPlotByClass(taxon, assembleages, click$id)
+            inventoryPlotByClass <- getInventoryPlotByClass(dataTaxonAsembleagesByStudy)
             inventoryPlotByClass
          })
 
        output$plotInventoryByOrder <- renderPlotly({
             cat("getInventoryPlotByOrder.R: Creating graphics by Order\n")
-            inventoryPlotByOrder <- getInventoryPlotByOrder(taxon, assembleages, click$id)
+            inventoryPlotByOrder <- getInventoryPlotByOrder(dataTaxonAsembleagesByStudy)
             inventoryPlotByOrder
         })
        
        
        #Merge assembleages and taxon to send general graphics
        #This function create the filter and record in file
-       #mergedAssembleagesTaxon <- mergeAssembleagesTaxon(taxon ,assembleages)
+         # source("loadData.R")
+         # cat("app.R:Loading Taxon to create mergedData\n"); data <- loadData();taxon <- data$taxon
+         # cat("app.R:Loading Taxon to create mergedData\n");assembleages <- data$assembleages
+         # mergedAssembleagesTaxon <- mergeAssembleagesTaxon(taxon ,assembleages)
+         # write.csv2(merged_taxon, file = "inst/filtered_data.csv", row.names = FALSE)
+       
        #Load combination from taxon and assembleages
        mergedAssembleagesTaxon <- read.csv("inst/filtered_data.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
        

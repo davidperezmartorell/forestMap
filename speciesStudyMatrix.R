@@ -10,11 +10,6 @@ speciesStudyMatrix <- function(assembleages,taxon, idStudyUnique) {
   library("DT")
   library("dplyr")
   library("tidyr")
-    #taxon <- read.csv("inst/tax_cleaned.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
-    #assembleages <- read.csv("inst/comm_nodist_plants.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding="latin1")
-    #id_study <- "PR_Lopez-Quintero et al. 2012_Plants_Lopez"
-    #idStudyUnique <- id_study
-    #speciesStudyMatrix(assembleages,taxon, id_study)
 
   cat("speciesStudyMatrix.D: Creating matrix species related\n")
 
@@ -44,7 +39,7 @@ speciesStudyMatrix <- function(assembleages,taxon, idStudyUnique) {
   
   
   # Create the HTML tittle
-      tittle_html <- paste("<h3>FORESTMAP Species matrix by community site</h3>")
+      tittle_html <- paste("<h3>FORESTMAP Matrix inventory specie-community site and measurement</h3>")
       #Select values interesting in this inventory because can mesure presence/absence, abundance or maybe others. I want to explain in the table
           assembleages_subset <- assembleages %>%
             select(study_common_taxon, organism_threshold, metric, metric_source) %>%
