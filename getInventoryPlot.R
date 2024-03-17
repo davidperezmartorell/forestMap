@@ -6,55 +6,28 @@
 #' @export
 #' @examples
 #' getInventoryPlot(taxon,assembleages,study)
-getInventoryPlot<-function(taxon,assembleages,study){
+getInventoryPlot<-function(result_filtered){
  
- taxon <- taxon[taxon$id_study %in% study & !is.na(taxon$measurement) & taxon$measurement >= 0.1, ]
-
- assembleages <- assembleages[assembleages$id_study %in% study, ]
-
-# #Load inventarioCalvino
-#  inventarioCalvino<- read.csv("inst/inventarioCalvino.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE)#, fileEncoding="latin1")
-# 
-# # Merge the dataframes based on common columns
-merged_data <- merge(taxon, assembleages, by = c("id_study", "id_comm"), all.x = TRUE)
-# 
-# # Merge the result with inventarioCalvino based on common columns
-#  merged_data <- merge(merged_data, inventarioCalvino, by.x = "taxon_clean", by.y = "scientificName", all.x = TRUE)
-
-# Select the relevant columns
- result <- merged_data[, c("taxon_clean", "measurement", "age", "id_study", "id_comm", "study_common_taxon", "family", "genus")]
-
-# Filter out rows where symbol_type is NULL or NA
- result <- na.omit(result)
- result_filtered <- result %>% filter(!is.na(age) & !is.na(measurement) & !is.na(taxon_clean) )
-
- # Convert measurement and age columns to numeric
- result_filtered$measurement <- as.numeric(gsub(",", ".", result_filtered$measurement))
- result_filtered$age <- as.numeric(result_filtered$age)
- 
-# Create the plot with symbols
- library(plotly)
- # inventoryPlot <- plot_ly(result_filtered, x = ~age, y = ~measurement,
- #                          color = ~family,
- #                          type = "scatter", mode = "markers", size = ~5,
- #                          hoverinfo = "text",
- #                          text = ~paste("family: ", family, "<br>Species: ", taxon_clean,  "<br>Value: ", measurement)) %>%
- #   layout(
- #     xaxis = list(title = "Age"),
- #     yaxis = list(title = "Measurement (log scale)"),
- #     showlegend = TRUE
- #   )
 
  # Calculate the median value of measurement for each family at each age
- median_values <- result_filtered %>%
+ mean_values <- result_filtered %>%
    group_by(age, family) %>%
-   summarise(median_measurement = median(measurement))
+   summarise(mean_values = mean(richness))
+ 
+ #Choose 10 more important values
+ summed_data <- mean_values %>%
+        group_by(family) %>%
+        summarise(total_measurement = sum(mean_values)) %>%
+        ungroup()
+ summed_data2 <- summed_data%>% head(10) %>% select(family)
+ 
+ mean_values2 <- mean_values %>% filter(trimws(family) %in% summed_data2$family)
  
  # Plotting the aggregated data
- plot<-ggplot(median_values, aes(x = age, y = median_measurement, color = family)) +
+ plot<-ggplot(mean_values2, aes(x = age, y = mean_values, color = family)) +
    geom_line() +
    geom_point(size = 2) +  # Add points for each measurement
-   labs(title = "Median Measurement by family at Each Age", x = "Age", y = "Median Measurement") +
+   labs(title = "Mean more important values by richness family and age", x = "Age", y = "Mean by richness") +
    theme_minimal()
 return(plot)
 

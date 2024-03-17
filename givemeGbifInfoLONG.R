@@ -424,4 +424,9 @@
   
   
   
+  ####################################
+  #Review fungi values
+  ####################################
+  taxon2 <- taxon %>% mutate(across(c(kingdom, phylum, class, order, family, genus),if_else(grepl('^[0-9]+$', taxon_clean), "FUNGI", .)))
+  write.csv2(taxon2, "inst/tax_cleaned2.csv", row.names = FALSE)
   

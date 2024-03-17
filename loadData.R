@@ -55,11 +55,20 @@ loadData <- function(){
    cat("loadData.R:: there are ", nrow(differences) , " values in differences that are not in taxon\n")
   
    
-
+   #Merge assembleages and taxon to send general graphics
+   #This function create the filter and record in file
+   # source("loadData.R")
+   # cat("app.R:Loading Taxon to create mergedData\n"); data <- loadData();taxon <- data$taxon
+   # cat("app.R:Loading Taxon to create mergedData\n");assembleages <- data$assembleages
+   # mergedAssembleagesTaxon <- mergeAssembleagesTaxon(taxon ,assembleages)
+   # write.csv2(mergedAssembleagesTaxon, file = "inst/filtered_data.csv", row.names = FALSE)
+   
+   #Load combination from taxon and assembleages
+   mergedAssembleagesTaxon <- read.csv("inst/filtered_data.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
   
    # Return the list
    # Create a list to hold the data frames
-   result_list <- list(taxon = taxon, assembleages = assembleages)
+   result_list <- list(taxon = taxon, assembleages = assembleages, mergedAssembleagesTaxon=mergedAssembleagesTaxon)
    return(result_list)
 }
 

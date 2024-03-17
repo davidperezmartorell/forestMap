@@ -39,23 +39,23 @@ speciesStudyMatrix <- function(assembleages,taxon, idStudyUnique) {
   
   
   # Create the HTML tittle
-      tittle_html <- paste("<h3>FORESTMAP Matrix inventory specie-community site and measurement</h3>")
+      tittle_html <- paste("<h3>Matrix inventory specie-community site and measurement </h3>")
       #Select values interesting in this inventory because can mesure presence/absence, abundance or maybe others. I want to explain in the table
           assembleages_subset <- assembleages %>%
             select(study_common_taxon, organism_threshold, metric, metric_source) %>%
             slice(1) %>%  # Select only the first row assuming it's constant for all rows
             rename(
-              Study_Common_Taxon = study_common_taxon,
-              Organism_Threshold = organism_threshold,
-              Metric = metric,
-              Metric_Source = metric_source
+              "Study Common Taxon" = study_common_taxon,
+              "Organism Threshold" = organism_threshold,
+              "Metric" = metric,
+              "Metric Source" = metric_source
             )
           
           # Format each variable and its description
           for (field in colnames(assembleages_subset)) {
             tittle_html <- paste(
               tittle_html,
-              "<strong>", field, ":</strong> ", assembleages_subset[1, field],
+              "<h4><strong>", field, " : </strong></h4>", assembleages_subset[1, field],
               sep = " "
             )
           }

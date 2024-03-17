@@ -74,7 +74,7 @@ renderMap <- function(inputData) {
       lat = ~exact_lat,
       lng = ~exact_long,
       layerId = ~id_study,
-      radius = 10,
+      radius = 20,
       fillColor = ~case_when(
         possible_alternatives == "recovering" ~ "green",
         possible_alternatives == "reference, recovering" ~ "orange",
@@ -99,7 +99,7 @@ renderMap <- function(inputData) {
     addLegend(
       position = "bottomright",
       colors = c("green", "orange", "purple", "brown"),
-      labels = c("Recovering", "Reference, Recovering", "Recovering, Disturbed", "Reference, Recovering, Disturbed"),
+      labels = c("Recovering", "Reference -> Recovering", "Recovering -> Disturbed", "Reference -> Recovering -> Disturbed"),
       title = "Stages",
       opacity = 1
     )

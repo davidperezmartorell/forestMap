@@ -1,48 +1,29 @@
 #' Returns Plot with relation recovering condition versus age for all species
-#' @param  data dataframe mixed taxon and assembleages
+#' @param  result_filtered dataframe mixed taxon and assembleages
 #' @return  plot Plot with relation Family, age for all species
 #' @export
 #' @examples
 #' getplotRecoveringConditionGeneral(taxon,assembleages,study)
-getplotRecoveringConditionGeneral <- function(data) {
-
-  filtered_data<-data %>% select(age, richness,disturbance1_age_clean, recovering_cond )
+getplotRecoveringConditionGeneral <- function(mergedAssembleagesTaxon) {
+  
   # Convert the age column to a factor with labels corresponding to the new age groups
-  filtered_data2 <- filtered_data %>% 
-    mutate(age_group = cut(age, breaks = c(0,5,10, 15,20,50,500), include.lowest = TRUE))
-  
-  # Define the three recovering condition groups
-  filtered_data3 <- filtered_data2 %>%
-    mutate(recovering_cond_group = case_when(
-      recovering_cond %in% c("protection") ~ "Protection",
-      recovering_cond %in% c("restoration", "restoration/protection", "restoration/use") ~ "Restoration",
-      TRUE ~ "Others"
-    ))
-  
-  # Summarize the data by age group and recovering condition group
-  summary_data <- filtered_data3 %>%
-    group_by(age_group, recovering_cond_group) %>%
-    summarise(mean_measurement = mean(richness, na.rm = TRUE))
-  
-  
-  plot<-ggplot(summary_data, aes(x = age_group, y = mean_measurement, fill = recovering_cond_group)) +
-    geom_col(position = "dodge") +
-    labs(title = "Mean abundance respect recovering contition over the Years",
-         x = "Age",
-         y = "Measurement",
-         fill = "Recovering") +
-    theme_minimal()
+  result_filtered <- mergedAssembleagesTaxon %>% 
+    mutate(age_group = cut(age, breaks = c(0,5,10,15,20,25,30,35,40,45,50,75,100,200,300,400,500), include.lowest = TRUE))
 
+  # Plotting the aggregated data with adjusted width and position of bars
+  plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = recovering_cond)) +
+    geom_boxplot(position = position_dodge(width = 0.8), width = 0.7) +
+    labs(title = "Richness by Recovering condition from all the studies", x = "Age groups", y = "Richness") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
+    scale_x_discrete()  
+  
+  #browser
+  #ggsave("www/plotRecoveringConditionGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
+  rm(result_filtered)
+  return(plotStage)
+}
 
-  # ggplot(summary_data, aes(x = age_group, y = log(mean_measurement + 1), fill = recovering_cond_group)) +
-  #   geom_col(position = "dodge") +
-  #   labs(title = "Log Measurement Changes Over the Years",
-  #        x = "Age Group",
-  #        y = "Log Mean Measurement",
-  #        fill = "Recovering Condition Group") +
-  #   theme_minimal()
-return(plot)
-} 
 
 
 

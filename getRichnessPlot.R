@@ -5,52 +5,42 @@
 #' @export
 #' @examples
 #' getRichnessPlot(data)
-getRichnessPlot <- function(data, identifier) {
+getRichnessPlot <- function(data) {
   
-  #Select id_study where id (study clicked) pertains
-  idStudyCommon <- data %>% filter(str_detect(id, fixed(identifier))) %>% dplyr::select(id_study) %>%
-    distinct() %>% pull(id_study)
+  data <- data %>%
+    group_by(age, stage) %>%
+    summarise(mean_richness = mean(richness, na.rm = TRUE))
   
-  data <- data %>% filter(id_study == idStudyCommon)
-  # Convert 'age_ori' to numeric
   data$age <- as.numeric(data$age)
-  data$predisturbances_clean <- ifelse(is.na(data$predisturbances_clean), "", data$predisturbances_clean) # Replace NA values in data$richness with 1
-  data$disturbance1_age_clean <- ifelse(is.na(data$disturbance1_age_clean), "", data$disturbance1_age_clean) # Replace NA values in data$richness with 1
-  data$disturbance2_clean <- ifelse(is.na(data$disturbance2_clean), "", data$disturbance2_clean) # Replace NA values in data$richness with 1
   
-  # Calculate breaks for both axes
-  data$richness <- ifelse(is.na(data$richness), 1, data$richness) # Replace NA values in data$richness with 1
-  richness_breaks <- seq(0, max(data$richness), length.out = 5)
+  # Determine unique stages in the data
+  stages <- unique(data$stage)
   
-  # Calculate the number of unique values in the stage column
-  num_colors <- n_distinct(data$stage)
-  
-  # Create a color palette with the desired number of colors
-  color_palette <- viridisLite::viridis(num_colors)
+  # Define colors based on stages
+  color_palette <- case_when(
+    stages == "recovering" ~ "green",
+    stages == "reference" ~ "blue",
+    stages == "disturbed" ~ "darkred",
+    stages == "protection" ~ "yellow"
+  )
   
   # Use the calculated color palette in the plot
-  richness_plot <- ggplot(data, aes(x = age, y = richness)) +
-    geom_point(aes(color = stage), size = 5) +
-    geom_text(aes(x = age, y = max(richness) + 5, label = disturbance1_age_clean),
-              vjust = -3, size = 5, hjust = 1, angle = 90,
-              nudge_x = 0.5, nudge_y = 0.5) +
-    geom_segment(aes(x = age, xend = age, y = 0, yend = max(richness)), 
-                 linetype = "dashed", color = "darkgray", alpha = 0.5) +
-    labs(title = "Number of taxons vs. Age",
-         x = "Age",
-         y = "Number of taxons") +
-    scale_color_manual(values = color_palette, name = "Stage") +
+  richness_plot <- ggplot(data, aes(x = age, y = mean_richness, color = stage)) +
+    geom_line() +
+    geom_point(size = 5) +
+    labs(title = "Taxon during disturbances and Age", x = "Age", y = "Mean Richness") +
     theme_minimal() +
+    scale_color_manual(values = color_palette, name = "Stage")+
     theme(
       panel.grid = element_blank(),
       panel.border = element_blank(),
-      axis.line = element_line(linewidth = 1, color = "black"),
-      text = element_text(size = 12),
-      axis.text = element_text(size = 14),
-      legend.text = element_text(size = 14)
+      #axis.line = element_line(linewidth = 1, color = "black"),
+      text = element_text(size = 16),
+      axis.text = element_text(size = 16),
+      legend.text = element_text(size = 16)
     )
-  
-  
+
+   richness_plot + coord_cartesian(expand = FALSE)  
   return(richness_plot)
-  
 }
+

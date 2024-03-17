@@ -16,6 +16,10 @@ studyClicked <- function(assembleages, idStudyUnique) {
   # Merge citation data with assemblages based on the citation column
   assemblages_merged <- merge(assemblages_ori, citation_data, by = "citation", all.x = TRUE)
 
+  #To see how many studies have not DOI assigned
+   withoutDOI <- assemblages_merged %>% filter (is.na(DOI)) %>% select (id_study, DOI)
+   cat("studyClicked.R: There are ", nrow(withoutDOI)," studies without DOI\n")
+  
   # Filter rows for the given study ID
   assemblagesCommon <- assemblages_merged %>% 
     filter(id_study == idStudyUnique) %>% 

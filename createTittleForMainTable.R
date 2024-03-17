@@ -5,7 +5,6 @@
 #' @examples
 #' createTittleForMainTable.R(inputData)
 createTittleForMainTable <- function(dataWorldMap) {
-
   cat("createTittleForMainTable.R: Creating tittle table\n")
   #If we want to select only interesting values to print in a table . Discarted exact_lat,	exact_long,	Country,	ISO3 and	geometry columns
   dataWorldMap <- dataWorldMap[, c("id_study", "id_comm")]

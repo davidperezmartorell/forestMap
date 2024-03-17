@@ -20,9 +20,9 @@ library("sf")  #To add buttons in menu
 library("tidyverse")
 library("terra")
 library("rgbif") #Discover from GBIF database information from each specie
-library("DT") #To create tables in result format under the plot
-library("reactable") #To create exciting tables
-library("plotly") #To plot graphs for inventory
+library("DT") #To create tables in result format under the plot install.packages("DT")
+library("reactable") #To create exciting tables #install.packages("gt")
+library("plotly") #To plot graphs for inventory install.packages("plotly")
 library("RColorBrewer") #To play with colours in leaflet map
 
   packages <- c("dplyr", "readr", "ggplot2", "leaflet", "leaflet.providers", 
