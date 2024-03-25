@@ -33,6 +33,7 @@ fluidRow(
   column(12, HTML("<h6> Version 1.2.2 08/03/2024 Updated data input</h6>")),
   column(12, HTML("<h6> Version 1.2.3 17/03/2024 Added total and year-range divided general graphs</h6>")),
   column(12, HTML("<h6> Version 1.3.0 17/03/2024 Stable Version</h6>")),
+  column(12, HTML("<h6> Version 1.3.1 25/03/2024 Vew graphics based on presence/absence instead median in study values.</h6>")),
   
   
 )#Fin pie de pagina fluidRow

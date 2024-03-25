@@ -66,9 +66,58 @@ loadData <- function(){
    #Load combination from taxon and assembleages
    mergedAssembleagesTaxon <- read.csv("inst/filtered_data.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
   
+
+   
+  
+   #Filter data grouping taxon, assembleages, age and measurement to plot graphics by presence|absence from each study
+   #It's used in graphics tag
+         # #Load data
+         # source("loadData.R")
+         # data <- loadData()
+         # source("loadLibraries.R")
+         # library("ggplot2")
+         # taxon <- data$taxon
+         # taxon_filtered <- dplyr::select(taxon,"id_comm", "id_study", "measurement","class", "order", "family")
+         # 
+         # assembleages <- data$assembleages
+         # assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "age", "richness")
+         # assembleages_filtered <- assembleages_filtered %>% unique()
+         # 
+         # # Merge the dataframes based on common columns
+         # merged_data <- merge(taxon_filtered, assembleages_filtered, by = c("id_study", "id_comm"), all.x = TRUE)
+         # 
+         # 
+         # mergedAssembleagesTaxonByTime1<- merged_data %>% filter(measurement != 0)
+         # # Group by id_study, age, and family, then count the number of rows in each group
+         # mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, family) %>% summarise(count = n())
+         # # Write the DataFrame to a CSV file
+         # write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByFamily.csv", row.names = FALSE)
+         # 
+         # # Group by id_study, age, and family, then count the number of rows in each group
+         # mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, class) %>% summarise(count = n())
+         # # Write the DataFrame to a CSV file
+         # write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByClass.csv", row.names = FALSE)
+         # 
+         # # Group by id_study, age, and family, then count the number of rows in each group
+         # mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, order) %>% summarise(count = n())
+         # # Write the DataFrame to a CSV file
+         # write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByOrder.csv", row.names = FALSE)
+         # 
+         # 
+         # 
+   #Load data filtered by age,[class|order|family] to print particular graphic for each id_study.can be used to id_comm too.
+   mergedByFamily <- read.csv("inst/mergedByFamily.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
+   mergedByClass <- read.csv("inst/mergedByClass.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
+   mergedByOrder <- read.csv("inst/mergedByOrder.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
+       
+   
+   
+   
+   
    # Return the list
    # Create a list to hold the data frames
-   result_list <- list(taxon = taxon, assembleages = assembleages, mergedAssembleagesTaxon=mergedAssembleagesTaxon)
+   result_list <- list(taxon = taxon, assembleages = assembleages, mergedAssembleagesTaxon=mergedAssembleagesTaxon,
+                       mergedByFamily=mergedByFamily,mergedByClass=mergedByClass,mergedByOrder=mergedByOrder)
    return(result_list)
 }
 

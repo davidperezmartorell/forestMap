@@ -9,7 +9,7 @@ getRichnessPlot <- function(data) {
   
   data <- data %>%
     group_by(age, stage) %>%
-    summarise(mean_richness = mean(richness, na.rm = TRUE))
+    summarise(median_richness = median(richness, na.rm = TRUE))
   
   data$age <- as.numeric(data$age)
   
@@ -25,22 +25,23 @@ getRichnessPlot <- function(data) {
   )
   
   # Use the calculated color palette in the plot
-  richness_plot <- ggplot(data, aes(x = age, y = mean_richness, color = stage)) +
+  richness_plot <- ggplot(data, aes(x = age, y = median_richness, color = stage)) +
     geom_line() +
     geom_point(size = 5) +
-    labs(title = "Taxon during disturbances and Age", x = "Age", y = "Mean Richness") +
+    labs(title = "Median Taxon values along Age by disturbances", x = "Age", y = "Richness median") +
+    scale_color_manual(values = color_palette, name = "Stage") +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(data$median_richness) * 1.1)) +  # Ensure y-axis starts from 0 and extends a bit beyond the maximum value
     theme_minimal() +
-    scale_color_manual(values = color_palette, name = "Stage")+
     theme(
-      panel.grid = element_blank(),
+      panel.grid = element_line(linewidth = 0.3, color = "grey"),
       panel.border = element_blank(),
-      #axis.line = element_line(linewidth = 1, color = "black"),
+      axis.line = element_line(linewidth = 1, color = "black"),
       text = element_text(size = 16),
       axis.text = element_text(size = 16),
       legend.text = element_text(size = 16)
     )
 
-   richness_plot + coord_cartesian(expand = FALSE)  
+   #richness_plot + coord_cartesian(expand = FALSE)  
   return(richness_plot)
 }
 

@@ -1,4 +1,4 @@
-  # Install the 'here' package if you haven't already
+      # Install the 'here' package if you haven't already
   # install.packages("here")
   
   #roxygen2::roxygenise()
@@ -28,7 +28,9 @@
   source("getplotInventoryByStudyCommonTaxonGeneral.R"); #Returns plot with inventory all the database by study common taxon
   source("getplotRichnessByDisturbanceAgeGeneral.R"); #Returns taxon and assembleages merged
   source("getplotRecoveringConditionGeneral.R"); #Returns Plot with relation recovering condition versus age for all species
- 
+  source("getInventoryPlotByOrderPresence.R"); #Returns Plot with data grouped by presence|ausence
+  source("getInventoryPlotByClassPresence.R"); #Returns Plot with  data grouped by presence|ausence
+  source("getInventoryPlotByFamilyPresence.R"); #Returns Plot with  data grouped by presence|ausence
   
   
   # Remove all objects from the global environment
@@ -51,16 +53,23 @@
   
    
    #Select interesting values from both dataframes  
-   cat("app.R: Filterting assembleages \n")
-    assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean",
+    cat("app.R: Filterting assembleages \n")
+     assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean",
                                           "country", "disturbance1_age_clean", "age", "n_comm_available", "metric", "citation", "database")
-   assembleages_filtered <- assembleages_filtered %>% unique()
+     assembleages_filtered <- assembleages_filtered %>% unique()
    
    cat("app.R: After filter, there are loaded ", nrow(assembleages_filtered), "values from assembleages\n")
    
    #Load mix of taxon and assembleages by d_comm to create general graphics
    cat("app.R: Creating a register combining taxon and assembleages \n")
    mergedAssembleagesTaxonByTime <- data$mergedAssembleagesTaxon
+   
+   
+   #Load data filtering values to plot study graph by presence|absence
+    mergedByFamily <- data$mergedByFamily
+    mergedByClass <- data$mergedByClass
+    mergedByOrder <- data$mergedByOrder
+
    
    head(assembleages_filtered)
    
@@ -97,7 +106,6 @@
             tabPanel("Study",
              fluidRow(
                    titlePanel(HTML("<h3>Information from study</h3>")),
-                   # column(12, div(id = "contentCommRelated", HTML("<h3>Information about ID_COMM clicked</h3>"))),
                    div(DT::dataTableOutput("studyClicked"), style = "margin-bottom: 20px; ,margin-right: 20px;"),  # Output for the first table with common values
                    titlePanel(HTML("<h3>Information from communities</h3>")),
                    div(DT::dataTableOutput("studiesRelated"), style = "margin-top: 20px;")   # Output for the second table with different values
@@ -107,26 +115,32 @@
             tabPanel("Graphics",
                mainPanel(
                  fluidRow(
-                   column(6, 
-                          div(style = "margin-right 20px; margin-bottom: 20px;", plotOutput("plotRichness", height = "400px"))
-                   ),
-                   column(6, 
-                          div(style = "margin-bottom: 20px;", plotlyOutput("plotInventoryByClass", height = "400px"))
-                   ),
-                   column(6, 
-                          div(style = "margin-right: 20px; margin-bottom: 20px;", plotlyOutput("plotInventoryByOrder", height = "400px"))
-                   ),
-                   column(6, 
-                          div(style = "margin-bottom: 20px;", plotlyOutput("plotInventory", height = "400px"))
-                   ),
-                 )
-               )
+                   column(12, 
+                          div(plotlyOutput("plotRichness", width = "900px", height = "556px"))
+                   )),
+                 fluidRow(
+                   column(12, 
+                          div(style = "margin-top: 20px;", plotlyOutput("plotInventoryByClass", width = "900px", height = "556px"))
+                   )),
+                 fluidRow(
+                   column(12, 
+                          div(style = "margin-top: 20px;", plotlyOutput("inventoryPlotByClassPresence", width = "900px", height = "556px"))
+                   )),
+                 fluidRow(
+                   column(12, 
+                          div(style = "margin-top: 20px;", plotlyOutput("inventoryPlotByOrderPresence", width = "900px", height = "556px"))
+                   )),
+                 fluidRow(
+                   column(12, 
+                          div(style = "margin-top: 20px;", plotlyOutput("inventoryPlotByFamilyPresence", width = "900px", height = "556px"))
+                   ))
+                )
             ),
   
            
             tabPanel("Taxon",
                fluidRow(
-                 column(12, uiOutput("matrixTittle")), 
+                 column(12, uiOutput("matrixTittle")),  
                  column(12, dataTableOutput("speciesStudyMatrixOutput", height = "400px"))
                )
             ),
@@ -142,47 +156,16 @@
                  sliderInput("timeRange", "Time Range:", min = 0, max = 500, value = c(0, 500), step = 5, width = '100%'),
                  mainPanel(
                    fluidRow(
-                     column(12, img(src = "plotInventoryByStageGeneral.png", style = "width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
+                     column(12, plotlyOutput("plotInventoryByStageGeneral", width = "1200px", height = "450px"))
                    ),
+                   tags$div(style = "height: 30px;"), # Add margin between plots
                    fluidRow(
-                     column(12, plotlyOutput("plotInventoryByStageGeneral"))
+                     column(12, plotlyOutput("plotRichnessByDisturbanceAgeGeneral", width = "1200px", height = "450px"))
                    ),
-                   fluidRow(
-                     column(12, img(src = "plotRecoveringConditionGeneral.png", style = "width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),
-                   fluidRow(
-                     column(12, plotlyOutput("plotRecoveringCondition"))
-                   ),
-                   fluidRow(
-                     column(12, img(src = "plotRichnessByDisturbanceAgeGeneral.png", style = "width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),
-                   fluidRow(
-                     column(12, plotlyOutput("plotRichnessByDisturbanceAgeGeneral"))
-                   ),
-                   fluidRow(
-                     column(12, img(src = "plotRichnessByCloudAgeGeneral.png", style = "max-width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),                     
+                   tags$div(style = "height: 30px;"), # Add margin between plots
                    fluidRow(                     
-                    column(12, plotlyOutput("plotRichnessByCloudAgeGeneral"))
-                   ),
-                   fluidRow(
-                     column(12, img(src = "plotRichnessByCloudAgeGeneralPoints.png", style = "max-width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),                     
-                   fluidRow(                     
-                     column(12, plotlyOutput("plotRichnessByCloudAgeGeneralPoints"))
-                   ),
-                   fluidRow(
-                     column(12, img(src = "plotInventoryByStudyCommonTaxonGeneral.png", style = "max-width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),                     
-                   fluidRow(                     
-                     column(12, plotlyOutput("plotInventoryByStudyCommonTaxonGeneral"))
-                   ),
-                   fluidRow(
-                     column(12, img(src = "plotInventoryByClassGeneral.png", style = "max-width: auto; height: auto; display: block; margin-left: auto; margin-right: auto;")),
-                   ),                     
-                   fluidRow(                     
-                     column(12, plotlyOutput("plotInventoryByClassGeneral"))
-                   ),
+                     column(12, plotlyOutput("plotInventoryByStudyCommonTaxonGeneral", width = "1200px", height = "450px"))
+                   )
                )),
             tabPanel("Versions",
                mainPanel(
@@ -217,7 +200,12 @@
            result <- studyClicked(assembleages, click$id)
            studyClickedData <- result$assemblagesCommon
            studiesRelatedData <- result$assemblagesUnique
-  
+           
+      #Filter values to plot study graph by presence|absence
+           mergedByFamily <- filter(mergedByFamily, id_study == click$id)
+           mergedByClass <- filter(mergedByClass, id_study == click$id)
+           mergedByOrder <- filter(mergedByOrder, id_study == click$id)
+
       #Create table according study clicked with general and particular contents
            output$studyClicked <- renderDT({
              datatable(studyClickedData, escape = FALSE)
@@ -238,9 +226,9 @@
         # Request inventory of taxon
               output$speciesStudyMatrixOutput <- renderDataTable({
                 # Render the DataTable
-                  dataframeMatrix <- speciesStudyMatrix(assembleages, taxon, click$id)
-                matrixDataframe <- dataframeMatrix$data
-                matrixTittle <- dataframeMatrix$tittle  # Corrected variable name
+                 dataframeMatrix <- speciesStudyMatrix(assembleages, taxon, click$id)
+                 matrixDataframe <- dataframeMatrix$data
+                 matrixTittle <- dataframeMatrix$tittle  # Corrected variable name
                 
                 # Send the title to the UI
                 output$matrixTittle <- renderUI({
@@ -248,7 +236,8 @@
                 })
                 
                 # Return the DataTable
-                datatable(matrixDataframe, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
+                #datatable(matrixDataframe, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
+                datatable(matrixDataframe, escape = FALSE, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
               })
   
           
@@ -257,7 +246,7 @@
           dataTaxonAsembleagesByStudy <- filterDataByIdstudy(taxon,assembleages,infoFromIDStudy$id_study)                 
           
           #React when is clicked Graphics with plot
-          output$plotRichness <- renderPlot({
+          output$plotRichness <- renderPlotly({
               cat("getRichnessPlot.R: Creating graphics by Richness\n")
               richnessPlot <- getRichnessPlot(dataTaxonAsembleagesByStudy)
               richnessPlot
@@ -275,11 +264,29 @@
               inventoryPlotByClass
            })
   
-         output$plotInventoryByOrder <- renderPlotly({
+         output$plotInventoryByOrder <- renderPlot({
               cat("getInventoryPlotByOrder.R: Creating graphics by Order\n")
               inventoryPlotByOrder <- getInventoryPlotByOrder(dataTaxonAsembleagesByStudy)
               inventoryPlotByOrder
           })
+         
+         output$inventoryPlotByClassPresence <- renderPlotly({
+           cat("getInventoryPlotByClassPresence.R: Creating graphics by Class presence\n")
+           inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)
+           inventoryPlotByClassPresence
+         })
+         
+         output$inventoryPlotByOrderPresence <- renderPlotly({
+           cat("getInventoryPlotByOrderPresence.R: Creating graphics by Order presence\n")
+           inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)
+           inventoryPlotByOrderPresence
+         })
+         
+         output$inventoryPlotByFamilyPresence <- renderPlotly({
+           cat("getInventoryPlotByFamilyPresence.R: Creating graphics by Family presence\n")
+           inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)
+           inventoryPlotByFamilyPresence
+         })
          
          
   
@@ -331,21 +338,15 @@
         cat("getplotInventoryByStageGeneral.R: Creating graphics by Stage\n")
         mergedAssembleagesTaxon<-filterDataByAge()          
         plotInventoryByStageGeneral <- getplotInventoryByStageGeneral(mergedAssembleagesTaxon)
+        plotInventoryByStageGeneral<- ggplotly(plotInventoryByStageGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
         plotInventoryByStageGeneral
       })
-      
-      output$plotRecoveringCondition <- renderPlotly({
-        cat("getplotInventoryByStageGeneral.R: Creating graphics by Stage\n")
-        mergedAssembleagesTaxon<-filterDataByAge()
-        plotRecoveringCondition <- getplotRecoveringConditionGeneral(mergedAssembleagesTaxon)
-        plotRecoveringCondition
-      })
-      
-      
+
       output$plotRichnessByDisturbanceAgeGeneral <- renderPlotly({
         cat("getplotRichnessByDisturbanceAgeGeneral: Creating graphics Disturbance by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotRichnessByDisturbanceAgeGeneral <- getplotRichnessByDisturbanceAgeGeneral(mergedAssembleagesTaxon)
+        plotRichnessByDisturbanceAgeGeneral<- ggplotly(plotRichnessByDisturbanceAgeGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
         plotRichnessByDisturbanceAgeGeneral
       })
       
@@ -354,36 +355,10 @@
         cat("plotInventoryByStudyCommonTaxonGeneral: Creating graphics by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotInventoryByStudyCommonTaxonGeneral <- getplotInventoryByStudyCommonTaxonGeneral(mergedAssembleagesTaxon)
+        plotInventoryByStudyCommonTaxonGeneral<- ggplotly(plotInventoryByStudyCommonTaxonGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
         plotInventoryByStudyCommonTaxonGeneral
       })
-      
-      output$plotInventoryByClassGeneral <- renderPlotly({
-        cat("plotInventoryByClassGeneral: Creating graphics by General\n")
-        mergedAssembleagesTaxon<-filterDataByAge()
-        plotInventoryByClassGeneral <- getplotInventoryByClassGeneral(mergedAssembleagesTaxon)
-        plotInventoryByClassGeneral
-      })
-      
-      output$plotInventoryByOrderGeneral <- renderPlotly({
-        cat("getplotInventoryByOrderGeneral.R: Creating graphics by General\n")
-        mergedAssembleagesTaxon<-filterDataByAge()
-        plotInventoryByOrderGeneral <- getplotInventoryByOrderGeneral(mergedAssembleagesTaxon)
-        plotInventoryByOrderGeneral
-      })
-      
-      output$plotRichnessByCloudAgeGeneral <- renderPlotly({
-        cat("getplotRichnessCloudAgeGeneral: Creating graphics by General\n")
-        mergedAssembleagesTaxon<-filterDataByAge()
-        plotRichnessByCloudAgeGeneral <- getplotRichnessCloudAgeGeneral(mergedAssembleagesTaxon)
-        ggplotly(plotRichnessByCloudAgeGeneral)
-      })
-      
-      output$plotRichnessByCloudAgeGeneralPoints <- renderPlotly({
-        cat("getplotRichnessCloudAgeGeneralPoints: Creating graphics by General\n")
-        mergedAssembleagesTaxon<-filterDataByAge()
-        plotRichnessByCloudAgeGeneralPoints <- getplotRichnessCloudAgeGeneralPoints(mergedAssembleagesTaxon)
-        ggplotly(plotRichnessByCloudAgeGeneralPoints)
-      })
+
   
   }#End of server function
   

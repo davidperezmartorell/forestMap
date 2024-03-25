@@ -47,14 +47,22 @@ studyClicked <- function(assembleages, idStudyUnique) {
   # Dataframe with values repeated in all the id_comm from that study
   assemblagesUnique <- assemblages_merged %>% 
     filter(id_study == idStudyUnique) %>% 
-    select(site, lat, lon, age, age_ori, stage, disturbance1_age_clean, predisturbances, postdisturbance, current_impact, recovering_cond, taxon_level, error_class, sampling_effort_within, notes)
+    select(site, lat, lon, age, age_ori, stage, disturbance1_age_clean, predisturbances, postdisturbance, current_impact, recovering_cond, taxon_level, error_class, sampling_effort_within)
+ 
+  # Convert character vector to numeric
+    assemblagesUnique$error_class <- as.numeric(assemblagesUnique$error_class)
+  # Modify error_class to only 2 decimals
+    assemblagesUnique$error_class <- round(assemblagesUnique$error_class, 2)
   
+  
+   
   # Modifying Citation column to include HTML markup and opened in new navigator window
-  assemblagesCommon <- assemblagesCommon %>% mutate(DOI = paste0('<html><a href="', DOI, '" target="_blank">', DOI, '</a></html>'))
-
+   assemblagesCommon <- assemblagesCommon %>% mutate(DOI = paste0('<html><a href="', DOI, '" target="_blank">', DOI, '</a></html>'))
+   
+ 
   
   # Rename columns
-  colnames(assemblagesUnique) <- c("Site", "Latitude", "Longitude", "Age", "Age Original", "Stage", "Disturbance age", "Predisturbances", "Postdisturbance", "Current impact", "Recovering condition", "Taxon level", "Error class", "Sampling effort", "Notes")
+  colnames(assemblagesUnique) <- c("Site", "Latitude", "Longitude", "Age", "Age Original", "Stage", "Disturbance age", "Predisturbances", "Postdisturbance", "Current impact", "Recovering condition", "Taxon level", "Classification error", "Sampling effort")
   
   return(list(assemblagesCommon = assemblagesCommon, assemblagesUnique = assemblagesUnique))
   

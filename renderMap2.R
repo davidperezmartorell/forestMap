@@ -94,40 +94,16 @@ renderMap <- function(inputData) {
         "Source: ", citation, "<br>",
         "Origin database: ", database, "<br>"
       ),
-      #This code paints the group of items with the same color
-      #You can choose differents colours deppending the contents.
-      clusterOptions = markerClusterOptions(
-        showCoverageOnHover = FALSE,
-        iconCreateFunction = JS("
-          function(cluster) {
-            var childCount = cluster.getChildCount();
-            var c = 'white';
-              if (childCount > 10) {
-                c = 'white';
-              } else if (childCount > 5) {
-                c = 'white';
-              } else if (childCount > 1) {
-                c = 'white';
-              } else if (childCount = 1) {
-                c = 'white';
-              }
-
-            return new L.DivIcon({ 
-              html: '<div style=\"background-color:' + c + '\" class=\"circle\">' + childCount + '</div>',
-              className: 'marker-cluster',
-              iconSize: new L.Point(40, 40)
-            });
-          }
-        ")
-      )
+      clusterOptions = markerClusterOptions(showCoverageOnHover = FALSE)
     ) %>%
     addLegend(
       position = "bottomright",
-      colors = c("white","darkblue", "red", "darkgreen", "brown"),
-      labels = c("Studies group", "Recovering", "Reference and Recovering", "Disturbed and Recovering", "Reference and Disturbed and Recovering"),
+      colors = c("darkblue", "red", "darkgreen", "brown"),
+      labels = c("Recovering", "Reference and Recovering", "Disturbed and Recovering", "Reference and Disturbed and Recovering"),
       title = "Stages",
       opacity = 1
     )
+  
   
   
   

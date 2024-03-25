@@ -149,8 +149,16 @@ assembleages %>% filter(grepl("Liebsch et al", id_comm)) %>% select(id_comm) %>%
      rm(getplotRichnessByDisturbanceAgeGeneral)
      source("getplotRichnessByDisturbanceAgeGeneral.R") #by recovering condition
      plotStage<-getplotRichnessByDisturbanceAgeGeneral(mergedAssembleagesTaxon)
-     plotStage
-     ggplotly(plotStage)
+     #plotStage
+     #ggplotly(plotStage)
+     
+     plotlyPlot <- ggplotly(plotStage) %>%
+       layout(boxmode = 'group', boxgap = 0.1) # Adjust box gap as needed
+     plotlyPlot
+     
+     
+     
+     
      
 
      ############################################
@@ -158,10 +166,12 @@ assembleages %>% filter(grepl("Liebsch et al", id_comm)) %>% select(id_comm) %>%
      ############################################
      mergedAssembleagesTaxon <- read.csv("inst/filtered_data.csv", stringsAsFactors = FALSE, sep = ";", header = TRUE, fileEncoding = "latin1", dec = ",")
      
-     rm(getplotRichnessCloudAgeGeneralPoints)
-     source("getplotRichnessCloudAgeGeneralPoints.R") #by recovering condition
-     plotStage<-getplotRichnessCloudAgeGeneralPoints(mergedAssembleagesTaxon)
-     plotStage
+     rm(getplotInventoryByStudyCommonTaxonGeneral)
+     source("getplotInventoryByStudyCommonTaxonGeneral.R") #by recovering condition
+     plotStage<-getplotInventoryByStudyCommonTaxonGeneral(mergedAssembleagesTaxon)
+     
+     
+     #plotStage
 
      plotStage
      
@@ -222,5 +232,63 @@ assembleages %>% filter(grepl("Liebsch et al", id_comm)) %>% select(id_comm) %>%
      getplotRichnessCloudAgeGeneral
      getplotRichnessCloudAgeGeneralPoints
      
+####################################################################################################
+#   LETS CREATE GROUP OF VALUES BY TAXON, FAMILY AND SUM VALUES NOT ZERO TO SEE EVOLUTION.
+####################################################################################################
      
-       
+     #Load data
+     source("loadData.R")
+     data <- loadData()
+     source("loadLibraries.R")
+     library("ggplot2")
+     taxon <- data$taxon
+     taxon_filtered <- dplyr::select(taxon,"id_comm", "id_study", "measurement","class", "order", "family")
+     
+     assembleages <- data$assembleages
+     assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "age", "richness")
+     assembleages_filtered <- assembleages_filtered %>% unique()
+     
+     # Merge the dataframes based on common columns
+     merged_data <- merge(taxon_filtered, assembleages_filtered, by = c("id_study", "id_comm"), all.x = TRUE)
+     
+     
+     mergedAssembleagesTaxonByTime1<- merged_data %>% filter(measurement != 0)
+     # Group by id_study, age, and family, then count the number of rows in each group
+     mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, family) %>% summarise(count = n())
+     # Write the DataFrame to a CSV file
+     write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByFamily.csv", row.names = FALSE)
+     
+     # Group by id_study, age, and family, then count the number of rows in each group
+     mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, class) %>% summarise(count = n())
+     # Write the DataFrame to a CSV file
+     write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByClass.csv", row.names = FALSE)
+     
+     # Group by id_study, age, and family, then count the number of rows in each group
+     mergedAssembleagesTaxonByTime2 <- mergedAssembleagesTaxonByTime1 %>% group_by(id_study, age, order) %>% summarise(count = n())
+     # Write the DataFrame to a CSV file
+     write.csv2(mergedAssembleagesTaxonByTime2, "inst/mergedByOrder.csv", row.names = FALSE)
+     
+     
+
+     
+     
+     rm(mergedByFamily2,mergedByClass2,mergedByOrder2)
+     mergedByFamily2 <- filter(mergedByFamily, id_study == "CU_Aravena et al. 2002_1 1A Saplings random plots or quadrats")
+     mergedByClass2 <- filter(mergedByClass, id_study == "CU_Aravena et al. 2002_1 1A Saplings random plots or quadrats")
+     mergedByOrder2 <- filter(mergedByOrder, id_study == "CU_Aravena et al. 2002_1 1A Saplings random plots or quadrats")
+     mergedByFamily2$age <- as.numeric(mergedByFamily2$age)
+     mergedByClass2$age <- as.numeric(mergedByClass2$age)
+     mergedByOrder2$age <- as.numeric(mergedByOrder2$age)
+          
+     rm(getInventoryPlotByFamily);rm(getInventoryPlotByOrder);rm(getInventoryPlotByClass)
+     
+     
+     source("getInventoryPlotByFamilyPresence.R") #by recovering condition
+     source("getInventoryPlotByClassPresence.R") #by recovering condition
+     source("getInventoryPlotByOrderPresence.R") #by recovering condition
+     
+     plotStage<-getInventoryPlotByFamilyPresence(mergedByFamily2);plot(plotStage)
+     plotStage<-getInventoryPlotByClassPresence(mergedByClass2);plot(plotStage)
+     plotStage<-getInventoryPlotByOrderPresence(mergedByOrder2);plot(plotStage)
+     plot(plotStage)
+     
