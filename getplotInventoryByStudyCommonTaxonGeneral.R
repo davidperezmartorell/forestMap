@@ -7,6 +7,7 @@
 #' @examples
 #' getplotInventoryByStudyCommonTaxonGeneral(taxon,assembleages,study)
 getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
+
   #Filter possible NA or NULL values
   mergedAssembleagesTaxon %>%  filter(!is.na(study_common_taxon) & !is.na(age) & !is.na(richness))
   
@@ -26,8 +27,8 @@ getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
   # Create age groups
   result_filtered <- mergedAssembleagesTaxon %>%
     #mutate(age_group = cut(age, breaks = c(0,5,10,15,20,25,30,35,40,45,50,75,100,200,300,400,500), include.lowest = TRUE)) %>%
-    #mutate(age_group = cut(age, breaks = c(0,10,20,30,40,50,60,70,80,90,100,500), include.lowest = TRUE))
-    mutate(age_group = cut(age, breaks = c(0,10,20,30,40,50,60,70,80,90,100,110, 120, 130, 140, 150, 500), include.lowest = TRUE)) %>%
+    mutate(age_group = cut(age, breaks = c(0,10,20,30,40,50,60,70,80,90,100,500), include.lowest = TRUE)) %>%
+    #mutate(age_group = cut(age, breaks = c(0,10,20,30,40,50,60,70,80,90,100,110, 120, 130, 140, 150, 500), include.lowest = TRUE)) %>%
     mutate(age_group = as.factor(age_group))
   
   # Calculate the number of values represented in the plot
@@ -41,17 +42,12 @@ getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
     scale_x_discrete() 
   
-  # Convert ggplot to plotly
-  plotlyPlot <- ggplotly(plotStage)
-  
-  # Modify layout to add legend at the bottom
-  plotlyPlot <- plotlyPlot %>%
-    layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
-  
-  
+  # # Convert ggplot to plotly
+  # plotlyPlot <- ggplotly(plotStage)
   #ggsave("www/plotInventoryByStudyCommonTaxonGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
   rm(result_filtered)
-  return(plotlyPlot)
+  # return(plotlyPlot)
+  return(plotStage)
   
 }
 

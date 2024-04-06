@@ -71,7 +71,7 @@
     mergedByOrder <- data$mergedByOrder
 
    
-   head(assembleages_filtered)
+   # head(assembleages_filtered)
    
    # Define a reactive value to store the map
     mapToPlot <- reactiveVal()
@@ -85,17 +85,61 @@
           tags$head(
             tags$style(
               HTML(
-                "body, html {height: 100%; margin: 0; background-color: #f2f2f2;} 
-        #map {height: 100%;} 
-        .title-panel {background-color: #f2f2f2; color: #000000; font-family: 'Tahoma'; font-size: 18px; font-weight: bold; text-align: center; padding: 50px; height: 200px;}"
+                "
+                  body, html {height: 100%; margin: 0; background-color: #f2f2f2;} 
+                  #map {height: 100%;} 
+                  .title-panel {background-color: #f2f2f2; color: #000000; font-family: 'Tahoma'; font-size: 18px; font-weight: bold; text-align: center; padding: 50px; height: 200px;}
+                  
+                  /* New Styles */
+                  .custom-title {
+                    background-color: #4CAF50; /* Green background */
+                    color: white; /* White text */
+                    padding: 14px 20px; /* Some padding */
+                    margin: 10px 0px; /* Some margin */
+                    border: none; /* No border */
+                    cursor: pointer; /* Pointer/hand icon */
+                    width: 100%; /* Full width */
+                    font-family: Arial, sans-serif; /* Font family */
+                    text-align: center; /* Centered text */
+                  }
+                  .custom-download-button .btn {
+                    background-color: #4CAF50; /* Green background */
+                    color: white; /* White text */
+                    padding: 10px 24px; /* Some padding */
+                    border-radius: 5px; /* Rounded corners */
+                    font-size: 16px; /* Larger font size */
+                    font-weight: bold; /* Bold font weight */
+                  }
+                  "
               )
             ),
             tags$script(src = "https://unpkg.com/leaflet-providers@1.12.0/leaflet-providers.js"),
-            tags$link(rel = "stylesheet", href = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css")
+            tags$link(rel = "stylesheet", href = "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"),
+            
+            tags$head(
+              tags$script(HTML("
+            $(document).on('shiny:connected', function() {
+                // Add title attributes when the Shiny session is connected
+                $('#downloadHTML').attr('title', 'Please, navigate all the data before download');
+                $('#downloadPDF').attr('title', 'Please, navigate all the data before download');
+            });"))),
+          ),  #End of tags$head
+
+          
+          fluidRow(
+            column(width = 8, offset = 1, 
+                   HTML("<h2 class='custom-title'>FORESTMAP Plot maps from particular inventory with studies and inventories</h2>")
+            ),
+            column(width = 1, # Adjust based on the size of your button or desired alignment
+                   downloadButton("downloadHTML", label = "Download HTML"),
+                   align = "center"
+            ),
+            column(width = 1, # Adjust based on the size of your button or desired alignment
+                   downloadButton("downloadPDF", label = "Download PDF"),
+                   align = "center"
+            )
           ),
           
-          titlePanel(HTML("<h2>FORESTMAP Plot maps from particular inventory with studies and inventories</h2>")),
-  
           
           tabsetPanel(
               tabPanel("Map", 
@@ -179,19 +223,27 @@
    
   # Server
   server <- function(input, output,session) {
+    # Initialize reactive values
+    studyClickedDataReact <- reactiveVal()
+    studiesRelatedDataReact <- reactiveVal()
+    richnessPlotReact <- reactiveVal()
+    inventoryPlotByClassReact<- reactiveVal()
+    inventoryPlotByOrderPresenceReact <- reactiveVal()
+    inventoryPlotByClassPresenceReact <- reactiveVal()
+    inventoryPlotByFamilyPresenceReact <- reactiveVal()
+    matrixDataframeReact <- reactiveVal()
+    speciesListReact <- reactiveVal()
+    plotInventoryByStageGeneralReact <- reactiveVal()
+    plotRichnessByDisturbanceAgeGeneralReact <- reactiveVal()
+    plotInventoryByStudyCommonTaxonGeneralReact <- reactiveVal()
     
+  
     
-    # Create reactiveValues to store map and clicked marker information
-    map_info <- reactiveVal(NULL)
-    mergedAssembleagesTaxon <- reactiveVal(NULL)
-    
-    
-
     # Observe click events on the map and execute these actions
     observeEvent(input$map_marker_click, {
       
       #Extract info from map with clicked tear
-        click <- input$map_marker_click
+          click <- input$map_marker_click
         infoFromIDStudy <- filter(assembleages_filtered, id_study == click$id)
        
       #React when is clicked some tear with some study
@@ -205,31 +257,47 @@
            mergedByFamily <- filter(mergedByFamily, id_study == click$id)
            mergedByClass <- filter(mergedByClass, id_study == click$id)
            mergedByOrder <- filter(mergedByOrder, id_study == click$id)
-
+           
+     
+           
+###########################################################################
+#    Call function to create info about study clicked and info related    #
+###########################################################################
       #Create table according study clicked with general and particular contents
-           output$studyClicked <- renderDT({
-             datatable(studyClickedData, escape = FALSE)
-             
-           })
+        output$studyClicked <- renderDT({
+           datatable(studyClickedData, escape = FALSE)
+         })
          
          output$studiesRelated <- renderDT({
            DT::datatable(studiesRelatedData)
          })
-     
-     #Request info about each specie according study clicked
-        output$givemeGbifInfo <- DT::renderDataTable({
-              speciesList<-givemeGbifInfo(taxon ,assembleages,infoFromIDStudy$id_study)
-            datatable(speciesList, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1("SPECIES INFO ")))
-          })
+         
+         
+###########################################################################
+#    Call function to add taxonomy info in taxon.csv file                 #
+###########################################################################          
+ #Request info about each specie according study clicked
+    output$givemeGbifInfo <- DT::renderDataTable({
+        speciesList <- taxon %>% filter(id_study == infoFromIDStudy$id_study) %>% dplyr::select(taxon_clean, kingdom, phylum, class, family, genus, IsGymnosperm)
+        #This function only filters but can trigger info from GBIF. givemeGbifInfoLONG.R have more contents about how to get info from GBIF
+        #speciesList<-givemeGbifInfo(taxon ,assembleages,infoFromIDStudy$id_study)
+        speciesListReact
+        speciesListReact(speciesList)
+        datatable(speciesList, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1("SPECIES INFO ")))
+      })
   
-          
+###########################################################################
+#    Call function to create inventory matrix                             #
+###########################################################################          
+         
         # Request inventory of taxon
               output$speciesStudyMatrixOutput <- renderDataTable({
                 # Render the DataTable
                  dataframeMatrix <- speciesStudyMatrix(assembleages, taxon, click$id)
                  matrixDataframe <- dataframeMatrix$data
                  matrixTittle <- dataframeMatrix$tittle  # Corrected variable name
-                
+                 matrixDataframeReact(matrixDataframe)
+
                 # Send the title to the UI
                 output$matrixTittle <- renderUI({
                   HTML(matrixTittle)
@@ -249,47 +317,39 @@
           output$plotRichness <- renderPlotly({
               cat("getRichnessPlot.R: Creating graphics by Richness\n")
               richnessPlot <- getRichnessPlot(dataTaxonAsembleagesByStudy)
+              richnessPlotReact(richnessPlot)
               richnessPlot
           })
-   
-          output$plotInventory <- renderPlotly({
-              cat("getRichnessPlot.R: Creating graphics by Richness\n")
-              inventoryPlot <- getInventoryPlot(dataTaxonAsembleagesByStudy)
-              inventoryPlot
-            })
-      
-         output$plotInventoryByClass <- renderPlotly({
-              cat("getInventoryPlotByClass.R: Creating graphics by Class\n")
-              inventoryPlotByClass <- getInventoryPlotByClass(dataTaxonAsembleagesByStudy)
-              inventoryPlotByClass
-           })
-  
-         output$plotInventoryByOrder <- renderPlot({
-              cat("getInventoryPlotByOrder.R: Creating graphics by Order\n")
-              inventoryPlotByOrder <- getInventoryPlotByOrder(dataTaxonAsembleagesByStudy)
-              inventoryPlotByOrder
+          
+          output$plotInventoryByClass <- renderPlotly({
+            cat("getInventoryPlotByClass.R: Creating graphics by Class\n")
+            inventoryPlotByClass <- getInventoryPlotByClass(dataTaxonAsembleagesByStudy)
+            inventoryPlotByClassReact(inventoryPlotByClass)
+            inventoryPlotByClass
           })
-         
-         output$inventoryPlotByClassPresence <- renderPlotly({
-           cat("getInventoryPlotByClassPresence.R: Creating graphics by Class presence\n")
-           inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)
-           inventoryPlotByClassPresence
-         })
-         
-         output$inventoryPlotByOrderPresence <- renderPlotly({
-           cat("getInventoryPlotByOrderPresence.R: Creating graphics by Order presence\n")
-           inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)
-           inventoryPlotByOrderPresence
-         })
-         
-         output$inventoryPlotByFamilyPresence <- renderPlotly({
-           cat("getInventoryPlotByFamilyPresence.R: Creating graphics by Family presence\n")
-           inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)
-           inventoryPlotByFamilyPresence
-         })
-         
-         
-  
+          
+          output$inventoryPlotByClassPresence <- renderPlotly({
+            cat("getInventoryPlotByClassPresence.R: Creating graphics by Class presence\n")
+            inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)
+            inventoryPlotByClassPresenceReact(inventoryPlotByClassPresence)
+            inventoryPlotByClassPresence
+          })         
+          
+          output$inventoryPlotByOrderPresence <- renderPlotly({
+            cat("getInventoryPlotByOrderPresence.R: Creating graphics by Order presence\n")
+            inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)
+            inventoryPlotByOrderPresenceReact(inventoryPlotByOrderPresence)
+            inventoryPlotByOrderPresence
+          })          
+          
+          
+          output$inventoryPlotByFamilyPresence <- renderPlotly({
+            cat("getInventoryPlotByFamilyPresence.R: Creating graphics by Family presence\n")
+            inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)
+            inventoryPlotByFamilyPresenceReact(inventoryPlotByFamilyPresence)
+            inventoryPlotByFamilyPresence
+          })
+
       
         
          output$popupInfo <- renderText({
@@ -308,6 +368,15 @@
           print(clickedIconData$data)
         })
 
+###########################################################################
+#    Update the reactive values to create html/pdf to export   #
+###########################################################################
+        # Update the reactive values
+         studyClickedDataReact(result$assemblagesCommon)  # Set value using ()
+         studiesRelatedDataReact(result$assemblagesUnique)  # Set value using ()
+
+
+        
     })#End of Observe event function
     
     # Define a reactive expression that updates with input$timeRange
@@ -338,16 +407,33 @@
         cat("getplotInventoryByStageGeneral.R: Creating graphics by Stage\n")
         mergedAssembleagesTaxon<-filterDataByAge()          
         plotInventoryByStageGeneral <- getplotInventoryByStageGeneral(mergedAssembleagesTaxon)
-        plotInventoryByStageGeneral<- ggplotly(plotInventoryByStageGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
-        plotInventoryByStageGeneral
+        plotInventoryByStageGeneralReact(plotInventoryByStageGeneral)
+
+        # Convert ggplot to plotly
+        plotLYInventoryByStageGeneral <- ggplotly(plotInventoryByStageGeneral)
+        # Modify layout to add legend at the bottom
+        plotLYInventoryByStageGeneral <- plotLYInventoryByStageGeneral %>%
+          layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
+        
+        plotLYInventoryByStageGeneral<- ggplotly(plotLYInventoryByStageGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        plotLYInventoryByStageGeneral
       })
 
       output$plotRichnessByDisturbanceAgeGeneral <- renderPlotly({
         cat("getplotRichnessByDisturbanceAgeGeneral: Creating graphics Disturbance by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotRichnessByDisturbanceAgeGeneral <- getplotRichnessByDisturbanceAgeGeneral(mergedAssembleagesTaxon)
-        plotRichnessByDisturbanceAgeGeneral<- ggplotly(plotRichnessByDisturbanceAgeGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
-        plotRichnessByDisturbanceAgeGeneral
+        plotRichnessByDisturbanceAgeGeneralReact(plotRichnessByDisturbanceAgeGeneral)
+        
+        
+        # Convert ggplot to plotly
+        plotLYRichnessByDisturbanceAgeGeneral <- ggplotly(plotRichnessByDisturbanceAgeGeneral)
+        # Modify layout to add legend at the bottom
+        plotLYRichnessByDisturbanceAgeGeneral <- plotLYRichnessByDisturbanceAgeGeneral %>%
+          layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
+        
+        plotLYRichnessByDisturbanceAgeGeneral<- ggplotly(plotLYRichnessByDisturbanceAgeGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        plotLYRichnessByDisturbanceAgeGeneral
       })
       
       
@@ -355,12 +441,302 @@
         cat("plotInventoryByStudyCommonTaxonGeneral: Creating graphics by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotInventoryByStudyCommonTaxonGeneral <- getplotInventoryByStudyCommonTaxonGeneral(mergedAssembleagesTaxon)
-        plotInventoryByStudyCommonTaxonGeneral<- ggplotly(plotInventoryByStudyCommonTaxonGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
-        plotInventoryByStudyCommonTaxonGeneral
+        plotInventoryByStudyCommonTaxonGeneralReact(plotInventoryByStudyCommonTaxonGeneral)
+        
+        # Convert ggplot to plotly
+        plotLYInventoryByStudyCommonTaxonGeneral <- ggplotly(plotInventoryByStudyCommonTaxonGeneral)
+        # Modify layout to add legend at the bottom
+        plotLYInventoryByStudyCommonTaxonGeneral <- plotLYInventoryByStudyCommonTaxonGeneral %>%
+          layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
+        
+        
+        plotLYInventoryByStudyCommonTaxonGeneral<- ggplotly(plotLYInventoryByStudyCommonTaxonGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        plotLYInventoryByStudyCommonTaxonGeneral
       })
 
-  
-  }#End of server function
-  
+
+######################################################
+#    Create HTML                                     #
+######################################################   
+
+      # Direct assignment of downloadHandler to output$downloadHTML
+      output$downloadHTML <- downloadHandler(
+        filename = function() {
+          paste0("report-", Sys.Date(), ".html")
+        },
+        content = function(file) {
+
+          #Request react information
+            # Access the current value of reactive variables
+            studyClickedData <- studyClickedDataReact()  
+            studiesRelatedData <- studiesRelatedDataReact()  
+            richnessPlotData <- richnessPlotReact()
+            inventoryPlotByData <- inventoryPlotByClassReact()  
+            inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
+            inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
+            inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
+            matrixDataframeData <- matrixDataframeReact()
+            speciesListData <- speciesListReact()
+
+            plotInventoryByStageGeneralData <- plotInventoryByStageGeneralReact()
+            plotRichnessByDisturbanceAgeGeneralData <- plotRichnessByDisturbanceAgeGeneralReact()
+            plotInventoryByStudyCommonTaxonGeneralData <- plotInventoryByStudyCommonTaxonGeneralReact()
+            
+          #Convert images
+              # Convert to png for the richness plot
+              plotFilePathRichness <- tempfile(fileext = ".png")
+              ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
+              # Save the inventory plot by class to a file
+              plotFilePathInventory <- tempfile(fileext = ".png")
+              ggsave(plotFilePathInventory, plot = inventoryPlotByData, width = 8, height = 4, dpi = 300)
+              
+              # Save to png for the richness plot
+              plotFilePathClassPresence <- tempfile(fileext = ".png")
+              ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
+              # Save the inventory plot by class to a file
+              plotFilePathOrderPresence <- tempfile(fileext = ".png")
+              ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
+              
+              # Save the inventory plot by class to a file
+              plotFilePathFamilyPresence <- tempfile(fileext = ".png")
+              ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
+              
+
+              
+              # Save to png for the richness plot
+              plotInventoryByStageGeneralHTML <- tempfile(fileext = ".png")
+              ggsave(plotInventoryByStageGeneralHTML, plot = plotInventoryByStageGeneralData, width = 6, height = 4, dpi = 300)
+              
+              # Save to png for the richness plot
+              plotRichnessByDisturbanceAgeGeneralHTML <- tempfile(fileext = ".png")
+              ggsave(plotRichnessByDisturbanceAgeGeneralHTML, plot = plotRichnessByDisturbanceAgeGeneralData, width = 6, height = 4, dpi = 300)
+
+              # Save to png for the richness plot
+              plotInventoryByStudyCommonTaxonGeneralHTML <- tempfile(fileext = ".png")
+              ggsave(plotInventoryByStudyCommonTaxonGeneralHTML, plot = plotInventoryByStudyCommonTaxonGeneralData, width = 6, height = 4, dpi = 300)
+
+           #Generate images as html
+            # Generate HTML content for each data table
+            studyClickedDataTableHtml <- htmlTable(studyClickedData)
+            studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
+            
+            matrixDataframeHtml<-htmlTable(matrixDataframeData)
+
+            speciesListHtml<-htmlTable(speciesListData)
+
+
+            
+                        
+          # Combine HTML parts into one HTML document
+          htmlContent <- paste(
+            "<html><body><h1>Report Title</h1>",
+            "<p>Here is the dynamic content from our Shiny app.</p>",
+            "<h2>Study Clicked Data</h2>",
+            studyClickedDataTableHtml,
+            "<h2>Studies Related Data</h2>",
+            studiesRelatedDataTableHtml,
+            "<h2>Species matrix</h2>",
+            matrixDataframeHtml,
+            "<h2>Taxon table</h2>",          
+            speciesListHtml,
+            "<h2>Plot graphics by Richness</h2>",
+            sprintf('<img src="%s" alt="Richness Plot">', plotFilePathRichness),
+            "<h2>Plot graphics by Inventory</h2>",
+            sprintf('<img src="%s" alt="Inventory Plot">', plotFilePathInventory),
+            "<h2>Plot graphics by Presence by Class</h2>",
+            sprintf('<img src="%s" alt="Class presence Plot">', plotFilePathClassPresence),
+            "<h2>Plot graphics by Presence by Order</h2>",
+            sprintf('<img src="%s" alt="Order presence Plot">', plotFilePathOrderPresence),
+            "<h2>Plot graphics by Family by Order</h2>",
+            sprintf('<img src="%s" alt="Family presence Plot">', plotFilePathFamilyPresence),
+            "<h2>Plot graphics by Family by Order</h2>",
+            sprintf('<img src="%s" alt="General StagePlot">', plotInventoryByStageGeneralHTML),
+            "<h2>Plot graphics by Family by Order</h2>",
+            sprintf('<img src="%s" alt="General disturbance Plot">', plotRichnessByDisturbanceAgeGeneralHTML),
+            "<h2>Plot graphics by Family by Order</h2>",
+            sprintf('<img src="%s" alt="Common General taxon Plot">', plotInventoryByStudyCommonTaxonGeneralHTML),
+            "</body></html>",
+            sep = "\n"
+          )
+          
+          # Write the HTML content to the file specified by downloadHandler
+          writeLines(htmlContent, file)
+        }
+      )
+
+      ######################################################
+      #    Create PDF                                      #
+      ######################################################       
+      output$downloadPDF <- downloadHandler(
+        filename = function() {
+          paste0("report-", Sys.Date(), ".pdf")
+        },
+        content = function(file) {
+                        
+                        
+                        #HERE THE SAME CODE COPIED FROM HTML CODE EXPORT
+                        #Request react information
+                        # Access the current value of reactive variables
+                        studyClickedData <- studyClickedDataReact()  
+                        studiesRelatedData <- studiesRelatedDataReact()  
+                        richnessPlotData <- richnessPlotReact()
+                        inventoryPlotByData <- inventoryPlotByClassReact()  
+                        inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
+                        inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
+                        inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
+                        matrixDataframeData <- matrixDataframeReact()
+                        speciesListData <- speciesListReact()
+                        
+                        plotInventoryByStageGeneralData <- plotInventoryByStageGeneralReact()
+                        plotRichnessByDisturbanceAgeGeneralData <- plotRichnessByDisturbanceAgeGeneralReact()
+                        plotInventoryByStudyCommonTaxonGeneralData <- plotInventoryByStudyCommonTaxonGeneralReact()
+                        
+                        #Convert images
+                        # Convert to png for the richness plot
+                        plotFilePathRichness <- tempfile(fileext = ".png")
+                        ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
+                        # Save the inventory plot by class to a file
+                        plotFilePathInventory <- tempfile(fileext = ".png")
+                        ggsave(plotFilePathInventory, plot = inventoryPlotByData, width = 8, height = 4, dpi = 300)
+                        
+                        # Save to png for the richness plot
+                        plotFilePathClassPresence <- tempfile(fileext = ".png")
+                        ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
+                        # Save the inventory plot by class to a file
+                        plotFilePathOrderPresence <- tempfile(fileext = ".png")
+                        ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
+                        
+                        # Save the inventory plot by class to a file
+                        plotFilePathFamilyPresence <- tempfile(fileext = ".png")
+                        ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
+                        
+                        
+                        
+                        # Save to png for the richness plot
+                        plotInventoryByStageGeneralHTML <- tempfile(fileext = ".png")
+                        ggsave(plotInventoryByStageGeneralHTML, plot = plotInventoryByStageGeneralData, width = 6, height = 4, dpi = 300)
+                        
+                        # Save to png for the richness plot
+                        plotRichnessByDisturbanceAgeGeneralHTML <- tempfile(fileext = ".png")
+                        ggsave(plotRichnessByDisturbanceAgeGeneralHTML, plot = plotRichnessByDisturbanceAgeGeneralData, width = 6, height = 4, dpi = 300)
+                        
+                        # Save to png for the richness plot
+                        plotInventoryByStudyCommonTaxonGeneralHTML <- tempfile(fileext = ".png")
+                        ggsave(plotInventoryByStudyCommonTaxonGeneralHTML, plot = plotInventoryByStudyCommonTaxonGeneralData, width = 6, height = 4, dpi = 300)
+                        
+                        #Generate images as html
+                        # Generate HTML content for each data table
+                        studyClickedDataTableHtml <- htmlTable(studyClickedData)
+                        studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
+                        
+                        matrixDataframeHtml<-htmlTable(matrixDataframeData)
+                        
+                        speciesListHtml<-htmlTable(speciesListData)
+                        
+                        
+        # Define the path for the temporary .Rmd file
+        tempRmdPath <- tempfile(fileext = ".Rmd")
+
+        # Create and write content to the .Rmd file
+        rmdContent <- c(
+          "---",
+          "title: 'FORESTMAP Plot maps from particular inventory with studies and inventories'",
+          "output: pdf_document",
+          "---",
+          "",
+          "This report is generated based on user input.",
+          
+          "## Study Clicked Data Table",
+          "```{r study-clicked-data-table, echo=FALSE}",
+          "knitr::kable(studyClickedData)",
+          "```",
+          "## Studies Related Data Table",
+          "```{r studies-related-data-table, echo=FALSE}",
+          "knitr::kable(studiesRelatedData)",
+          "```",
+          "## Matrix Dataframe",
+          "```{r matrix-dataframe, echo=FALSE}",
+          "knitr::kable(matrixDataframeData)",
+          "```",
+          "## Species List Data",
+          "```{r species-list-data, echo=FALSE}",
+          "knitr::kable(speciesListData)",
+          "```",
+          "## Inventory Plot By Data",
+          "```{r inventory-plot-by-data, echo=FALSE}",
+          "inventoryPlotByData",
+          "```",
+          "## Inventory Plot By Order",
+          "```{r inventory-plot-by-order, echo=FALSE}",
+          "inventoryPlotByOrderPresenceData",
+          "```",
+          "## Inventory Plot By Class",
+          "```{r inventory-plot-by-class, echo=FALSE}",
+          "inventoryPlotByClassPresenceData",
+          "```",
+          "## Inventory Plot By Family",
+          "```{r inventory-plot-by-family, echo=FALSE}",
+          "inventoryPlotByFamilyPresenceData",
+          "```",
+          "## Richness Plot",
+          "```{r richness-plot, echo=FALSE}",
+          "knitr::include_graphics(plotFilePathRichness)",
+          "```",
+          "## Inventory Plot",
+          "```{r inventory-plot, echo=FALSE}",
+          "knitr::include_graphics(plotFilePathInventory)",
+          "```",
+          "## Class Presence Plot",
+          "```{r class-presence-plot, echo=FALSE}",
+          "knitr::include_graphics(plotFilePathClassPresence)",
+          "```",
+          "## Stage General Plot",
+          "```{r stage-general-plot, echo=FALSE}",
+          "knitr::include_graphics(plotInventoryByStageGeneralHTML)",
+          "```",
+          "## Disturbance Age General Plot",
+          "```{r age-general-plot, echo=FALSE}",
+          "knitr::include_graphics(plotRichnessByDisturbanceAgeGeneralHTML)",
+          "```",
+          "## Taxon General Plot",
+          "```{r taxon-general-plot, echo=FALSE}",
+          "knitr::include_graphics(plotInventoryByStudyCommonTaxonGeneralHTML)",
+          "```"
+        )#End of contents to add in pdf
+        # R Markdown content for plots
+
+        
+        # Write the Rmd content to the temp Rmd file
+        writeLines(rmdContent, con = tempRmdPath)
+        
+        
+        # Prepare parameters to pass to the R Markdown document
+        params <- list(
+          studyClickedDataTableHtml = studyClickedDataTableHtml,
+          studiesRelatedDataTableHtml = studiesRelatedDataTableHtml,
+          matrixDataframeData = matrixDataframeData,
+          speciesListData = speciesListData,
+          inventoryPlotByData = inventoryPlotByData,
+          inventoryPlotByOrderPresenceData = inventoryPlotByOrderPresenceData,
+          inventoryPlotByClassPresenceData = inventoryPlotByClassPresenceData,
+          inventoryPlotByFamilyPresenceData = inventoryPlotByFamilyPresenceData,
+          plotFilePathRichness = plotFilePathRichness,
+          plotFilePathInventory = plotFilePathInventory,
+          plotFilePathClassPresence = plotFilePathClassPresence,
+          plotInventoryByStageGeneralData = plotInventoryByStageGeneralData,
+          plotRichnessByDisturbanceAgeGeneralData = plotRichnessByDisturbanceAgeGeneralData,
+          plotInventoryByStudyCommonTaxonGeneralData = plotInventoryByStudyCommonTaxonGeneralData
+        )
+        
+        
+        # Render the R Markdown document to PDF
+        # Correctly use tempRmdPath in the render call
+        rmarkdown::render(tempRmdPath, output_file = file, params = params, envir = new.env())
+       }
+      )   
+
+      
+      
+  }#End of server function  
   shinyApp(ui, server)
           

@@ -24,6 +24,14 @@ library("DT") #To create tables in result format under the plot install.packages
 library("reactable") #To create exciting tables #install.packages("gt")
 library("plotly") #To plot graphs for inventory install.packages("plotly")
 library("RColorBrewer") #To play with colours in leaflet map
+library("pdfetch") #To create in pdf the info filtered
+library("rmarkdown") #To create document to be exported in pdf
+library("htmlTable") #To html and be exported in pdf
+library("webshot") #To convert html in pdf
+library("pagedown") #To convert html in pdf
+
+
+  
 
   packages <- c("dplyr", "readr", "ggplot2", "leaflet", "leaflet.providers", 
                 "shiny", "shinyjs", "rnaturalearth", "rnaturalearthdata", 

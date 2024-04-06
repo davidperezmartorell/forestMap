@@ -10,7 +10,7 @@ speciesStudyMatrix <- function(assembleages,taxon, idStudyUnique) {
   library("DT")
   library("dplyr")
   library("tidyr")
-
+  
   cat("speciesStudyMatrix.D: Creating matrix species related\n")
 
   # Select interesting values from assemblages
