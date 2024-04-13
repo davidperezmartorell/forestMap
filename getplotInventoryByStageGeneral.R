@@ -20,9 +20,8 @@ getplotInventoryByStageGeneral <- function(mergedAssembleagesTaxon) {
   # Plotting the aggregated data with log values
   plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = stage)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 0.1) +
-    labs(title = paste("Richness by Stage from all the studies (", num_values, "values represented)"), 
-         x = "Age groups", 
-         y = "Richness") +
+    labs(title = paste("Taxon number by Stage from all the studies (", num_values, "values represented)"),x = "Age groups", y = "Taxon number",
+         fill = "Stage") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
     scale_x_discrete()

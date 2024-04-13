@@ -30,7 +30,8 @@ getplotRichnessByDisturbanceAgeGeneral <- function(mergedAssembleagesTaxon) {
   # Plotting the aggregated data with adjusted width and position of bars
   plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = combined_disturbance)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 1) +
-    labs(title = paste("Richness by disturbance from all the studies (", num_values, "values represented)"), x = "Age groups", y = "Richness") +
+    labs(title = paste("Taxon number by disturbance from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
+         fill = "Disturbances") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
     scale_x_discrete() 

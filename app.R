@@ -31,7 +31,7 @@
   source("getInventoryPlotByOrderPresence.R"); #Returns Plot with data grouped by presence|ausence
   source("getInventoryPlotByClassPresence.R"); #Returns Plot with  data grouped by presence|ausence
   source("getInventoryPlotByFamilyPresence.R"); #Returns Plot with  data grouped by presence|ausence
-  
+  source("getPieGraphs.R"); #Returns 3 PIE GRAPHS WITH DISTRIBUCION IN taxonomy in that study
   
   # Remove all objects from the global environment
   rm(list = ls())
@@ -122,6 +122,7 @@
                 // Add title attributes when the Shiny session is connected
                 $('#downloadHTML').attr('title', 'Please, navigate all the data before download');
                 $('#downloadPDF').attr('title', 'Please, navigate all the data before download');
+                $('#downloadCSV').attr('title', 'Please, navigate all the data before download');
             });"))),
           ),  #End of tags$head
 
@@ -131,11 +132,15 @@
                    HTML("<h2 class='custom-title'>FORESTMAP Plot maps from particular inventory with studies and inventories</h2>")
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
-                   downloadButton("downloadHTML", label = "Download HTML"),
+                   downloadButton("downloadHTML", label = "HTML"),
                    align = "center"
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
-                   downloadButton("downloadPDF", label = "Download PDF"),
+                   downloadButton("downloadPDF", label = "PDF"),
+                   align = "center"
+            ),
+            column(width = 1, # Adjust based on the size of your button or desired alignment
+                   downloadButton("downloadCSV", label = "CSV"),
                    align = "center"
             )
           ),
@@ -162,10 +167,10 @@
                    column(12, 
                           div(plotlyOutput("plotRichness", width = "900px", height = "556px"))
                    )),
-                 fluidRow(
-                   column(12, 
-                          div(style = "margin-top: 20px;", plotlyOutput("plotInventoryByClass", width = "900px", height = "556px"))
-                   )),
+                 # fluidRow(
+                 #   column(12, 
+                 #          div(style = "margin-top: 20px;", plotlyOutput("plotInventoryByClass", width = "900px", height = "556px"))
+                 #   )),
                  fluidRow(
                    column(12, 
                           div(style = "margin-top: 20px;", plotlyOutput("inventoryPlotByClassPresence", width = "900px", height = "556px"))
@@ -189,28 +194,34 @@
                )
             ),
             
+             tabPanel("Species",
+               fluidRow(
+                 column(4, div(plotOutput("pieSpecieClass", height = "400px"))),
+                 column(4, div(plotOutput("pieSpecieOrder", height = "400px"))),
+                 column(4, div(plotOutput("pieSpecieFamily", height = "400px")))
+               ),
+               
+               fluidRow(
+                 column(12, dataTableOutput("givemeGbifInfo", height = "400px"))
+               )
+              ),
   
-            tabPanel("Species",
-             fluidRow(
-               column(12, dataTableOutput("givemeGbifInfo", height = "400px"))
-             )
-            ),
-  
-              tabPanel("General",
-                 sliderInput("timeRange", "Time Range:", min = 0, max = 500, value = c(0, 500), step = 5, width = '100%'),
-                 mainPanel(
-                   fluidRow(
-                     column(12, plotlyOutput("plotInventoryByStageGeneral", width = "1200px", height = "450px"))
-                   ),
-                   tags$div(style = "height: 30px;"), # Add margin between plots
-                   fluidRow(
-                     column(12, plotlyOutput("plotRichnessByDisturbanceAgeGeneral", width = "1200px", height = "450px"))
-                   ),
-                   tags$div(style = "height: 30px;"), # Add margin between plots
-                   fluidRow(                     
-                     column(12, plotlyOutput("plotInventoryByStudyCommonTaxonGeneral", width = "1200px", height = "450px"))
-                   )
-               )),
+            tabPanel("General",
+               sliderInput("timeRange", "Time Range:", min = 0, max = 500, value = c(0, 500), step = 5, width = '100%'),
+               mainPanel(
+                 fluidRow(
+                   column(12, plotlyOutput("plotInventoryByStageGeneral", width = "1200px", height = "450px"))
+                 ),
+                 tags$div(style = "height: 30px;"), # Add margin between plots
+                 fluidRow(
+                   column(12, plotlyOutput("plotRichnessByDisturbanceAgeGeneral", width = "1200px", height = "450px"))
+                 ),
+                 tags$div(style = "height: 30px;"), # Add margin between plots
+                 fluidRow(                     
+                   column(12, plotlyOutput("plotInventoryByStudyCommonTaxonGeneral", width = "1200px", height = "450px"))
+                 )
+             )),
+            
             tabPanel("Versions",
                mainPanel(
                  div(titlePanel(HTML("<h3>Versions of this program</h3>")), style = "margin-bottom: 20px; margin-right: 20px;"),
@@ -236,6 +247,10 @@
     plotInventoryByStageGeneralReact <- reactiveVal()
     plotRichnessByDisturbanceAgeGeneralReact <- reactiveVal()
     plotInventoryByStudyCommonTaxonGeneralReact <- reactiveVal()
+    pieSpecieClassReact <- reactiveVal()
+    pieSpecieOrderReact <- reactiveVal()
+    pieSpecieFamilyReact <- reactiveVal()
+    
     
   
     
@@ -278,12 +293,53 @@
 ###########################################################################          
  #Request info about each specie according study clicked
     output$givemeGbifInfo <- DT::renderDataTable({
-        speciesList <- taxon %>% filter(id_study == infoFromIDStudy$id_study) %>% dplyr::select(taxon_clean, kingdom, phylum, class, family, genus, IsGymnosperm)
-        #This function only filters but can trigger info from GBIF. givemeGbifInfoLONG.R have more contents about how to get info from GBIF
-        #speciesList<-givemeGbifInfo(taxon ,assembleages,infoFromIDStudy$id_study)
-        speciesListReact
-        speciesListReact(speciesList)
-        datatable(speciesList, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1("SPECIES INFO ")))
+
+      speciesList <- taxon %>% 
+        filter(id_study == infoFromIDStudy$id_study) %>% 
+        dplyr::select(taxon_clean, kingdom, phylum, class, order, family, genus, IsGymnosperm) %>%
+        rename(Taxon = taxon_clean, Kingdom = kingdom, Phylum = phylum, Class = class,
+               Order = order, Family = family, Genus = genus, "Is Gymnosperm" = IsGymnosperm)
+      speciesList <- speciesList %>% unique()
+      
+
+          ###########################################
+          #         PLOT PIE TABLE WITH TAXONOMY    #
+          ###########################################
+          
+          pieGraphs <- getPieGraphs(speciesList)
+          
+          pieSpecieClass<-pieGraphs$pieSpecieClass
+          pieSpecieFamily<-pieGraphs$pieSpecieFamily
+          pieSpecieOrder<-pieGraphs$pieSpecieOrder
+
+          
+          #React when is clicked Graphics with plot
+          output$pieSpecieClass <- renderPlot({
+            cat("app.R: Creating pie graphics by class\n")
+            pieSpecieClassReact(pieSpecieClass)
+            pieSpecieClass
+          })
+          
+          output$pieSpecieOrder <- renderPlot({
+            cat("app.R: Creating pie graphics by class\n")
+            pieSpecieOrderReact(pieSpecieOrder)
+            pieSpecieOrder
+          })
+          
+          output$pieSpecieFamily <- renderPlot({
+            cat("app.R: Creating pie graphics by family\n")
+            pieSpecieFamilyReact(pieSpecieFamily)
+            pieSpecieFamily
+          })
+          
+
+          #This function only filters but can trigger info from GBIF. givemeGbifInfoLONG.R have more contents about how to get info from GBIF
+          #speciesList<-givemeGbifInfo(taxon ,assembleages,infoFromIDStudy$id_study)
+          #speciesListReact
+          
+          speciesListReact(speciesList)
+          #Returns table values
+          datatable(speciesList, options = list(dom = 't', pageLength = 100, scrollX = TRUE), caption = tags$caption(tags$h1("SPECIES INFO ")))
       })
   
 ###########################################################################
@@ -321,23 +377,24 @@
               richnessPlot
           })
           
-          output$plotInventoryByClass <- renderPlotly({
-            cat("getInventoryPlotByClass.R: Creating graphics by Class\n")
-            inventoryPlotByClass <- getInventoryPlotByClass(dataTaxonAsembleagesByStudy)
-            inventoryPlotByClassReact(inventoryPlotByClass)
-            inventoryPlotByClass
-          })
+          
+          # output$plotInventoryByClass <- renderPlotly({
+          #   cat("getInventoryPlotByClass.R: Creating graphics by Class\n")
+          #   inventoryPlotByClass <- getInventoryPlotByClass(dataTaxonAsembleagesByStudy)
+          #   inventoryPlotByClassReact(inventoryPlotByClass)
+          #   inventoryPlotByClass
+          # })
           
           output$inventoryPlotByClassPresence <- renderPlotly({
             cat("getInventoryPlotByClassPresence.R: Creating graphics by Class presence\n")
-            inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)
+            inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)#assembleages_filtered
             inventoryPlotByClassPresenceReact(inventoryPlotByClassPresence)
             inventoryPlotByClassPresence
-          })         
+          })          
           
           output$inventoryPlotByOrderPresence <- renderPlotly({
             cat("getInventoryPlotByOrderPresence.R: Creating graphics by Order presence\n")
-            inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)
+            inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)#assembleages_filtered
             inventoryPlotByOrderPresenceReact(inventoryPlotByOrderPresence)
             inventoryPlotByOrderPresence
           })          
@@ -345,7 +402,7 @@
           
           output$inventoryPlotByFamilyPresence <- renderPlotly({
             cat("getInventoryPlotByFamilyPresence.R: Creating graphics by Family presence\n")
-            inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)
+            inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)#assembleages_filtered
             inventoryPlotByFamilyPresenceReact(inventoryPlotByFamilyPresence)
             inventoryPlotByFamilyPresence
           })
@@ -367,6 +424,10 @@
           # Print the clicked popup information
           print(clickedIconData$data)
         })
+
+
+        
+
 
 ###########################################################################
 #    Update the reactive values to create html/pdf to export   #
@@ -400,6 +461,8 @@
             }
       })
       
+
+        
     ######################################################
     #    Plot general graphics                           #
     ######################################################  
@@ -471,25 +534,20 @@
             studyClickedData <- studyClickedDataReact()  
             studiesRelatedData <- studiesRelatedDataReact()  
             richnessPlotData <- richnessPlotReact()
-            inventoryPlotByData <- inventoryPlotByClassReact()  
             inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
             inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
             inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
             matrixDataframeData <- matrixDataframeReact()
             speciesListData <- speciesListReact()
+            pieSpecieClass <- pieSpecieClassReact()
+            pieSpecieOrder <- pieSpecieOrderReact()   
+            pieSpecieFamily <- pieSpecieFamilyReact()
 
-            plotInventoryByStageGeneralData <- plotInventoryByStageGeneralReact()
-            plotRichnessByDisturbanceAgeGeneralData <- plotRichnessByDisturbanceAgeGeneralReact()
-            plotInventoryByStudyCommonTaxonGeneralData <- plotInventoryByStudyCommonTaxonGeneralReact()
-            
           #Convert images
               # Convert to png for the richness plot
               plotFilePathRichness <- tempfile(fileext = ".png")
               ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
-              # Save the inventory plot by class to a file
-              plotFilePathInventory <- tempfile(fileext = ".png")
-              ggsave(plotFilePathInventory, plot = inventoryPlotByData, width = 8, height = 4, dpi = 300)
-              
+
               # Save to png for the richness plot
               plotFilePathClassPresence <- tempfile(fileext = ".png")
               ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
@@ -502,18 +560,13 @@
               ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
               
 
-              
-              # Save to png for the richness plot
-              plotInventoryByStageGeneralHTML <- tempfile(fileext = ".png")
-              ggsave(plotInventoryByStageGeneralHTML, plot = plotInventoryByStageGeneralData, width = 6, height = 4, dpi = 300)
-              
-              # Save to png for the richness plot
-              plotRichnessByDisturbanceAgeGeneralHTML <- tempfile(fileext = ".png")
-              ggsave(plotRichnessByDisturbanceAgeGeneralHTML, plot = plotRichnessByDisturbanceAgeGeneralData, width = 6, height = 4, dpi = 300)
-
-              # Save to png for the richness plot
-              plotInventoryByStudyCommonTaxonGeneralHTML <- tempfile(fileext = ".png")
-              ggsave(plotInventoryByStudyCommonTaxonGeneralHTML, plot = plotInventoryByStudyCommonTaxonGeneralData, width = 6, height = 4, dpi = 300)
+              #Create pie plots
+              plotpieSpecieClass <- tempfile(fileext = ".png")
+              ggsave(plotpieSpecieClass, plot = pieSpecieClass, width = 6, height = 4, dpi = 300)
+              plotpieSpecieOrder <- tempfile(fileext = ".png")
+              ggsave(plotpieSpecieOrder, plot = pieSpecieOrder, width = 6, height = 4, dpi = 300)
+              plotpieSpecieFamily <- tempfile(fileext = ".png")
+              ggsave(plotpieSpecieFamily, plot = pieSpecieFamily, width = 6, height = 4, dpi = 300)              
 
            #Generate images as html
             # Generate HTML content for each data table
@@ -537,24 +590,22 @@
             studiesRelatedDataTableHtml,
             "<h2>Species matrix</h2>",
             matrixDataframeHtml,
+          
+            sprintf('<img src="%s" alt="Specie list by Class">', plotpieSpecieClass),
+
+            sprintf('<img src="%s" alt="Specie list by Order">', plotpieSpecieOrder),
+
+            sprintf('<img src="%s" alt="Specie list by Family">', plotpieSpecieFamily),
             "<h2>Taxon table</h2>",          
             speciesListHtml,
-            "<h2>Plot graphics by Richness</h2>",
+
             sprintf('<img src="%s" alt="Richness Plot">', plotFilePathRichness),
-            "<h2>Plot graphics by Inventory</h2>",
-            sprintf('<img src="%s" alt="Inventory Plot">', plotFilePathInventory),
-            "<h2>Plot graphics by Presence by Class</h2>",
+            
             sprintf('<img src="%s" alt="Class presence Plot">', plotFilePathClassPresence),
-            "<h2>Plot graphics by Presence by Order</h2>",
+            
             sprintf('<img src="%s" alt="Order presence Plot">', plotFilePathOrderPresence),
-            "<h2>Plot graphics by Family by Order</h2>",
+            
             sprintf('<img src="%s" alt="Family presence Plot">', plotFilePathFamilyPresence),
-            "<h2>Plot graphics by Family by Order</h2>",
-            sprintf('<img src="%s" alt="General StagePlot">', plotInventoryByStageGeneralHTML),
-            "<h2>Plot graphics by Family by Order</h2>",
-            sprintf('<img src="%s" alt="General disturbance Plot">', plotRichnessByDisturbanceAgeGeneralHTML),
-            "<h2>Plot graphics by Family by Order</h2>",
-            sprintf('<img src="%s" alt="Common General taxon Plot">', plotInventoryByStudyCommonTaxonGeneralHTML),
             "</body></html>",
             sep = "\n"
           )
@@ -580,24 +631,20 @@
                         studyClickedData <- studyClickedDataReact()  
                         studiesRelatedData <- studiesRelatedDataReact()  
                         richnessPlotData <- richnessPlotReact()
-                        inventoryPlotByData <- inventoryPlotByClassReact()  
                         inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
                         inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
                         inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
                         matrixDataframeData <- matrixDataframeReact()
                         speciesListData <- speciesListReact()
-                        
-                        plotInventoryByStageGeneralData <- plotInventoryByStageGeneralReact()
-                        plotRichnessByDisturbanceAgeGeneralData <- plotRichnessByDisturbanceAgeGeneralReact()
-                        plotInventoryByStudyCommonTaxonGeneralData <- plotInventoryByStudyCommonTaxonGeneralReact()
+                        pieSpecieClass <- pieSpecieClassReact()
+                        pieSpecieOrder <- pieSpecieOrderReact()   
+                        pieSpecieFamily <- pieSpecieFamilyReact()
                         
                         #Convert images
                         # Convert to png for the richness plot
                         plotFilePathRichness <- tempfile(fileext = ".png")
                         ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
-                        # Save the inventory plot by class to a file
-                        plotFilePathInventory <- tempfile(fileext = ".png")
-                        ggsave(plotFilePathInventory, plot = inventoryPlotByData, width = 8, height = 4, dpi = 300)
+
                         
                         # Save to png for the richness plot
                         plotFilePathClassPresence <- tempfile(fileext = ".png")
@@ -610,20 +657,7 @@
                         plotFilePathFamilyPresence <- tempfile(fileext = ".png")
                         ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
                         
-                        
-                        
-                        # Save to png for the richness plot
-                        plotInventoryByStageGeneralHTML <- tempfile(fileext = ".png")
-                        ggsave(plotInventoryByStageGeneralHTML, plot = plotInventoryByStageGeneralData, width = 6, height = 4, dpi = 300)
-                        
-                        # Save to png for the richness plot
-                        plotRichnessByDisturbanceAgeGeneralHTML <- tempfile(fileext = ".png")
-                        ggsave(plotRichnessByDisturbanceAgeGeneralHTML, plot = plotRichnessByDisturbanceAgeGeneralData, width = 6, height = 4, dpi = 300)
-                        
-                        # Save to png for the richness plot
-                        plotInventoryByStudyCommonTaxonGeneralHTML <- tempfile(fileext = ".png")
-                        ggsave(plotInventoryByStudyCommonTaxonGeneralHTML, plot = plotInventoryByStudyCommonTaxonGeneralData, width = 6, height = 4, dpi = 300)
-                        
+  
                         #Generate images as html
                         # Generate HTML content for each data table
                         studyClickedDataTableHtml <- htmlTable(studyClickedData)
@@ -633,6 +667,21 @@
                         
                         speciesListHtml<-htmlTable(speciesListData)
                         
+                        
+                        # Render the ggplot object
+                        plotpieSpecieClass <- ggplot2::ggplot_build(pieSpecieClass)$plot
+                        plotpieSpecieOrder <- ggplot2::ggplot_build(pieSpecieOrder)$plot
+                        plotpieSpecieFamily <- ggplot2::ggplot_build(pieSpecieFamily)$plot
+                        
+                        # Save the rendered plot as a PNG file
+                        plotpieSpecieClass_path <- tempfile(fileext = ".png")
+                        ggsave(plotpieSpecieClass_path, plot = plotpieSpecieClass, width = 6, height = 4, dpi = 300)
+
+                        plotpieSpecieOrder_path <- tempfile(fileext = ".png")
+                        ggsave(plotpieSpecieOrder_path, plot = plotpieSpecieOrder, width = 6, height = 4, dpi = 300)
+
+                        plotpieSpecieFamily_path <- tempfile(fileext = ".png")
+                        ggsave(plotpieSpecieFamily_path, plot = plotpieSpecieFamily, width = 6, height = 4, dpi = 300)
                         
         # Define the path for the temporary .Rmd file
         tempRmdPath <- tempfile(fileext = ".Rmd")
@@ -654,6 +703,18 @@
           "```{r studies-related-data-table, echo=FALSE}",
           "knitr::kable(studiesRelatedData)",
           "```",
+          
+
+          "```{r inventory-plot-pie-by-class, echo=FALSE}",
+          "knitr::include_graphics(plotpieSpecieClass_path)",
+
+          "```{r inventory-plot-pie-by-family, echo=FALSE}",
+          "knitr::include_graphics(plotpieSpecieFamily_path)",
+
+          "```{r inventory-plot-pie-by-order, echo=FALSE}",
+          "knitr::include_graphics(plotpieSpecieOrder_path)",
+          
+
           "## Matrix Dataframe",
           "```{r matrix-dataframe, echo=FALSE}",
           "knitr::kable(matrixDataframeData)",
@@ -662,49 +723,28 @@
           "```{r species-list-data, echo=FALSE}",
           "knitr::kable(speciesListData)",
           "```",
-          "## Inventory Plot By Data",
-          "```{r inventory-plot-by-data, echo=FALSE}",
-          "inventoryPlotByData",
-          "```",
-          "## Inventory Plot By Order",
+
           "```{r inventory-plot-by-order, echo=FALSE}",
           "inventoryPlotByOrderPresenceData",
           "```",
-          "## Inventory Plot By Class",
+
           "```{r inventory-plot-by-class, echo=FALSE}",
           "inventoryPlotByClassPresenceData",
           "```",
-          "## Inventory Plot By Family",
+
           "```{r inventory-plot-by-family, echo=FALSE}",
           "inventoryPlotByFamilyPresenceData",
           "```",
-          "## Richness Plot",
+
           "```{r richness-plot, echo=FALSE}",
           "knitr::include_graphics(plotFilePathRichness)",
           "```",
-          "## Inventory Plot",
-          "```{r inventory-plot, echo=FALSE}",
-          "knitr::include_graphics(plotFilePathInventory)",
-          "```",
-          "## Class Presence Plot",
+
           "```{r class-presence-plot, echo=FALSE}",
           "knitr::include_graphics(plotFilePathClassPresence)",
-          "```",
-          "## Stage General Plot",
-          "```{r stage-general-plot, echo=FALSE}",
-          "knitr::include_graphics(plotInventoryByStageGeneralHTML)",
-          "```",
-          "## Disturbance Age General Plot",
-          "```{r age-general-plot, echo=FALSE}",
-          "knitr::include_graphics(plotRichnessByDisturbanceAgeGeneralHTML)",
-          "```",
-          "## Taxon General Plot",
-          "```{r taxon-general-plot, echo=FALSE}",
-          "knitr::include_graphics(plotInventoryByStudyCommonTaxonGeneralHTML)",
           "```"
         )#End of contents to add in pdf
         # R Markdown content for plots
-
         
         # Write the Rmd content to the temp Rmd file
         writeLines(rmdContent, con = tempRmdPath)
@@ -716,26 +756,48 @@
           studiesRelatedDataTableHtml = studiesRelatedDataTableHtml,
           matrixDataframeData = matrixDataframeData,
           speciesListData = speciesListData,
-          inventoryPlotByData = inventoryPlotByData,
-          inventoryPlotByOrderPresenceData = inventoryPlotByOrderPresenceData,
+            inventoryPlotByOrderPresenceData = inventoryPlotByOrderPresenceData,
           inventoryPlotByClassPresenceData = inventoryPlotByClassPresenceData,
           inventoryPlotByFamilyPresenceData = inventoryPlotByFamilyPresenceData,
           plotFilePathRichness = plotFilePathRichness,
-          plotFilePathInventory = plotFilePathInventory,
-          plotFilePathClassPresence = plotFilePathClassPresence,
-          plotInventoryByStageGeneralData = plotInventoryByStageGeneralData,
-          plotRichnessByDisturbanceAgeGeneralData = plotRichnessByDisturbanceAgeGeneralData,
-          plotInventoryByStudyCommonTaxonGeneralData = plotInventoryByStudyCommonTaxonGeneralData
+          plotFilePathClassPresence = plotFilePathClassPresence
         )
         
         
         # Render the R Markdown document to PDF
         # Correctly use tempRmdPath in the render call
-        rmarkdown::render(tempRmdPath, output_file = file, params = params, envir = new.env())
+          rmarkdown::render(tempRmdPath, output_file = file, params = params, envir = new.env())
        }
       )   
 
       
+      ######################################################
+      #    Create CSV                                      #
+      ######################################################     
+      # Direct assignment of downloadHandler to output$downloadCSV
+      output$downloadCSV <- downloadHandler(
+        filename = function() {
+          paste0("report-", Sys.Date(), ".zip")
+        },
+        content = function(file) {
+          # Request react information
+          # Access the current value of reactive variables
+          studyClickedData <- studyClickedDataReact()  
+          studiesRelatedData <- studiesRelatedDataReact()  
+          matrixDataframeData <- matrixDataframeReact()
+          speciesListData <- speciesListReact()
+          
+          # Write each dataset to a separate CSV file
+          write.csv(studyClickedData, file = "studyClickedData.csv", row.names = FALSE)
+          write.csv(studiesRelatedData, file = "studiesRelatedData.csv", row.names = FALSE)
+          write.csv(matrixDataframeData, file = "matrixDataframeData.csv", row.names = FALSE)
+          write.csv(speciesListData, file = "speciesListData.csv", row.names = FALSE)
+          
+          # Create a zip file containing all CSV files
+          files_to_zip <- c("studyClickedData.csv", "studiesRelatedData.csv", "matrixDataframeData.csv", "speciesListData.csv")
+          zip(file, files_to_zip)
+        }
+      )
       
   }#End of server function  
   shinyApp(ui, server)

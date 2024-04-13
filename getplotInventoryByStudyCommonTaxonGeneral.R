@@ -11,18 +11,18 @@ getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
   #Filter possible NA or NULL values
   mergedAssembleagesTaxon %>%  filter(!is.na(study_common_taxon) & !is.na(age) & !is.na(richness))
   
-  # Implement the grouping strategy
-  mergedAssembleagesTaxon <- mergedAssembleagesTaxon %>%
-    mutate(broad_group = case_when(
-      str_to_lower(study_common_taxon) %in% c("trees", "trees and shrubs", "tree seedlings and saplings", 
-                                              "woody plants", "shrubs", "shrubs and trees", "trees and lianas", 
-                                              "trees, shrubs & herbs", "trees, shrubs and lianas seedlings", 
-                                              "trees, shrubs and herbs", "woody", "woody and herbaceous") ~ "Trees & Shrubs",
-      str_to_lower(study_common_taxon) %in% c("herbs", "herbaceous", "gramanoids", "forbes", "herbaceous plants and sub-shrubs", 
-                                              "herbs and ferns", "spring ephemeral herbs", "summer herbs", "plantae",
-                                              "plants", "understory plants", "small plants and climbers", "tracheophyta") ~ "Herbaceous",
-      TRUE ~ "palms,lianas, and others"
-    ))
+  # # Implement the grouping strategy
+  # mergedAssembleagesTaxon <- mergedAssembleagesTaxon %>%
+  #   mutate(broad_group = case_when(
+  #     str_to_lower(study_common_taxon) %in% c("trees", "trees and shrubs", "tree seedlings and saplings", 
+  #                                             "woody plants", "shrubs", "shrubs and trees", "trees and lianas", 
+  #                                             "trees, shrubs & herbs", "trees, shrubs and lianas seedlings", 
+  #                                             "trees, shrubs and herbs", "woody", "woody and herbaceous") ~ "Trees & Shrubs",
+  #     str_to_lower(study_common_taxon) %in% c("herbs", "herbaceous", "gramanoids", "forbes", "herbaceous plants and sub-shrubs", 
+  #                                             "herbs and ferns", "spring ephemeral herbs", "summer herbs", "plantae",
+  #                                             "plants", "understory plants", "small plants and climbers", "tracheophyta") ~ "Herbaceous",
+  #     TRUE ~ "palms,lianas, and others"
+  #   ))
 
   # Create age groups
   result_filtered <- mergedAssembleagesTaxon %>%
@@ -35,9 +35,10 @@ getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
   num_values <- nrow(result_filtered)
 
   # Plotting the data with boxplots for each age group, colored by broad_group
-  plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = broad_group)) +
+  plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = study_common_taxon_clean)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 0.5) +
-    labs(title = paste("Richness by Common taxon from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Richness") +
+    labs(title = paste("Taxon number by common taxon from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
+         fill = "Common taxon") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
     scale_x_discrete() 

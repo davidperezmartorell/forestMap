@@ -28,9 +28,10 @@ getRichnessPlot <- function(data) {
   richness_plot <- ggplot(data, aes(x = age, y = median_richness, color = stage)) +
     geom_line() +
     geom_point(size = 5) +
-    labs(title = "Median Taxon values along Age by disturbances", x = "Age", y = "Richness median") +
+    labs(title = "Median taxon along the communities studied", x = "Age", y = "Median taxon") +
     scale_color_manual(values = color_palette, name = "Stage") +
     scale_y_continuous(expand = c(0, 0), limits = c(0, max(data$median_richness) * 1.1)) +  # Ensure y-axis starts from 0 and extends a bit beyond the maximum value
+    scale_x_continuous(limits = c(0, NA)) + # For x-axis, if it were numeric  
     theme_minimal() +
     theme(
       panel.grid = element_line(linewidth = 0.3, color = "grey"),

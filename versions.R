@@ -36,6 +36,7 @@ fluidRow(
   column(12, HTML("<h6> Version 1.3.1 25/03/2024 View graphics based on presence/absence instead median in study values.</h6>")),
   column(12, HTML("<h6> Version 1.3.2 01/04/2024 Changed values ploted in each study deppending presence/absence by class, order,family instean abundance or richness </h6>")),
   column(12, HTML("<h6> Version 1.3.3 06/04/2024 Available to download contents pdf and html codification</h6>")),
+  column(12, HTML("<h6> Version 1.3.4 13/04/2024 Downloable as csv and improve minimal mistakes</h6>")),
   
   
 )#Fin pie de pagina fluidRow

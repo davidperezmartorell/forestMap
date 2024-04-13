@@ -1,0 +1,5 @@
+"Site","Latitude","Longitude","Age","Age Original","Stage","Disturbance age","Predisturbances","Postdisturbance","Current impact","Recovering condition","Taxon level","Classification error","Sampling effort"
+"Sit1","53.07","8.47","40","40","recovering","logging",NA,"none","none","regular","species",0.01,"1"
+"Sit2","53.07","8.47","80","80","recovering","logging",NA,"none","none","regular","species",0.01,"1"
+"Sit3","53.07","8.47","120","120","recovering","logging",NA,"none","none","regular","species",0.01,"1"
+"Sit4","53.07","8.47","250",">250","recovering","logging",NA,"none","none","protection","species",0.01,"1"

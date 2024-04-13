@@ -8,11 +8,30 @@ getInventoryPlotByFamilyPresence<-function(result_filtered){
 
   # Convert 'age' to numeric
   result_filtered$age <- as.numeric(result_filtered$age)
-  # Plotting the aggregated data
-  plot <- ggplot(result_filtered, aes(x = factor(age), y = family, size = count, color = family)) +
-    geom_point(alpha = 0.7) +
-    labs(title = "Family presence along the time", x = "Age", y = "Presence by family") +
-    scale_size(range = c(1, 15)) +  # Adjusts the minimum and maximum size of the circles
+  
+  #Select the more important values
+      # Step 1: Calculate the total count for each family
+      family_counts <- aggregate(count ~ family, data = result_filtered, FUN = sum)
+      
+      # Step 2: Sort the families based on their total count
+      sorted_families <- family_counts[order(family_counts$count, decreasing = TRUE), ]
+      
+      # Step 3: Select the top 10 families
+      top_10_families <- head(sorted_families$family, 10)
+      # Filter result_filtered based on the top 10 families
+      result_filtered <- result_filtered[result_filtered$family %in% top_10_families, ]
+
+  #Group by class      
+  result_filtered <- result_filtered %>%
+    group_by(family, age) %>%
+    summarise(total_count = sum(count)) %>%
+    top_n(10, total_count)  
+  
+  # Plotting the aggregated data with jittering
+  plot <- ggplot(result_filtered, aes(x = age, y = total_count, color = family)) +
+    geom_line() +
+    geom_point(size = 5) +
+    labs(title = "Taxon by family", x = "Age", y = "Taxon count") +
     theme_minimal() +
     theme(
       panel.grid = element_line(linewidth = 0.3, color = "grey"),
@@ -20,9 +39,9 @@ getInventoryPlotByFamilyPresence<-function(result_filtered){
       axis.line = element_line(linewidth = 1, color = "black"),
       text = element_text(size = 16),
       axis.text = element_text(size = 16),
-      legend.position = "none" # Hides the legend
+      legend.text = element_text(size = 16)
     )
-    theme(legend.position = "none") # Hides the legend
+  
   
   plot + scale_x_continuous(limits = c(0, NA)) # Ensures x-axis starts at 0
   
