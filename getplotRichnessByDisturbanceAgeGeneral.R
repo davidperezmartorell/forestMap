@@ -11,10 +11,10 @@ getplotRichnessByDisturbanceAgeGeneral <- function(mergedAssembleagesTaxon) {
     filter(disturbance1_age_clean != "") %>%
     filter(disturbance1_age_clean != "none") %>%
     mutate(combined_disturbance = ifelse(disturbance1_age_clean %in% c("burning", "burning/logging/farming", "burning/farming"), "burning",
-                                         ifelse(disturbance1_age_clean == "mining", "mining", 
-                                                ifelse(disturbance1_age_clean %in% c("logging", "logging/farming", "forest uses", "forest uses/logging"), "logging",
-                                                       ifelse(disturbance1_age_clean %in% c("cultivation","farming", "animal farming", "plantation", "plantation/logging"), "farming", "others")))))
-  
+                                   ifelse(disturbance1_age_clean == "mining", "mining",
+                                    ifelse(disturbance1_age_clean %in% c("logging", "logging/farming", "forest uses", "forest uses/logging"), "logging",
+                                     ifelse(disturbance1_age_clean %in% c("cultivation","farming", "animal farming", "plantation", "plantation/logging"), "farming", "others")))))
+
   result_filtered <- result_filtered %>% filter(combined_disturbance != "others")
   
   # Convert the age column to a factor with labels corresponding to the new age groups

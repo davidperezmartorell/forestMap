@@ -129,7 +129,7 @@
           
           fluidRow(
             column(width = 8, offset = 1, 
-                   HTML("<h2 class='custom-title'>FORESTMAP Plot maps from particular inventory with studies and inventories</h2>")
+                   HTML("<h3 class='custom-title'>FORESTMAP Forest disturbances inventories</h3>")
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
                    downloadButton("downloadHTML", label = "HTML"),
@@ -701,7 +701,7 @@
           "```",
           "## Studies Related Data Table",
           "```{r studies-related-data-table, echo=FALSE}",
-          "knitr::kable(studiesRelatedData)",
+            "knitr::kable(studiesRelatedData)",
           "```",
           
 
