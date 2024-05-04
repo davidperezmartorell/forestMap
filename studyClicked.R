@@ -13,6 +13,8 @@ studyClicked <- function(assembleages, idStudyUnique) {
   # Assuming 'assemblages' is an sf object
   assemblages_ori <- st_drop_geometry(assembleages)
   
+
+  
   # Merge citation data with assemblages based on the citation column
   assemblages_merged <- merge(assemblages_ori, citation_data, by = "citation", all.x = TRUE)
 
@@ -40,7 +42,7 @@ studyClicked <- function(assembleages, idStudyUnique) {
     )
   
   # Create a hyperlink for the Citation field
-  assemblagesCommon <- assemblagesCommon %>% select("Database", "Citation","DOI", "Study ID", "Number of communities", "Coord accuracy", "Study year", "Common taxon",
+  assemblagesCommon <- assemblagesCommon %>% select("Database", "Citation","DOI","url", "Study ID", "Number of communities", "Coord accuracy", "Study year", "Common taxon",
         "Metric","Metric source","Sampling method")
                  
 
@@ -57,12 +59,16 @@ studyClicked <- function(assembleages, idStudyUnique) {
   
    
   # Modifying Citation column to include HTML markup and opened in new navigator window
-   assemblagesCommon <- assemblagesCommon %>% mutate(DOI = paste0('<html><a href="', DOI, '" target="_blank">', DOI, '</a></html>'))
+    assemblagesCommon <- assemblagesCommon %>% mutate(DOI = paste0('<html><a href="', DOI, '" target="_blank">', DOI, '</a></html>'))
+    assemblagesCommon <- assemblagesCommon %>% mutate(url = paste0('<html><a href="', url, '" target="_blank">', url, '</a></html>'))
    
  
   
   # Rename columns
   colnames(assemblagesUnique) <- c("Site", "Latitude", "Longitude", "Age", "Age Original", "Stage", "Disturbance age", "Predisturbances", "Postdisturbance", "Current impact", "Recovering condition", "Taxon level", "Classification error", "Sampling effort")
+  
+  # Remove the variables from memory
+  rm(assembleages,assemblages_ori)
   
   return(list(assemblagesCommon = assemblagesCommon, assemblagesUnique = assemblagesUnique))
   

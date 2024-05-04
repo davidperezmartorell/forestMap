@@ -36,7 +36,7 @@ getplotInventoryByOrderGeneral <- function(mergedAssembleagesTaxon) {
   
   rm(orders_summary)
   rm(top_orders)
-  rm(result_filtered)
+  rm(result_filtered,mergedAssembleagesTaxon)
   #ggsave("www/plotInventoryByOrderGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
   return(plotOrder)
 }

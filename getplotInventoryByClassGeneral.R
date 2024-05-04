@@ -31,6 +31,7 @@ getplotInventoryByClassGeneral <- function(mergedAssembleagesTaxon) {
   
   rm(result_filtered)
   rm(top_classes)
+  rm(result_filtered,mergedAssembleagesTaxon)
   #ggsave("www/plotInventoryByClassGeneral.png", plot = plotStage, width = 2,67, height = 1,67, units = "in", dpi = 300)
   return(plotClass)
 }

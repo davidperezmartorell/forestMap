@@ -37,7 +37,7 @@ getplotInventoryByStageGeneral <- function(mergedAssembleagesTaxon) {
   #ggsave("www/plotInventoryByStageGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
   
 
-  rm(result_filtered)
+  rm(result_filtered,mergedAssembleagesTaxon)
   # return(plotlyPlot)
   return(plotStage)
 

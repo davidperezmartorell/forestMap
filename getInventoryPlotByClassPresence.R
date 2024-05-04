@@ -32,6 +32,8 @@ getInventoryPlotByClassPresence<-function(result_filtered){
     geom_point(size = 5) +
     labs(title = "Taxon by class", x = "Age", y = "Taxon count") +
     theme_minimal() +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, max(result_filtered$total_count) * 1.1)) +  # Ensure y-axis starts from 0 and extends a bit beyond the maximum value
+    scale_x_continuous(limits = c(0, NA)) + # For x-axis, if it were numeric
     theme(
       panel.grid = element_line(linewidth = 0.3, color = "grey"),
       panel.border = element_blank(),
@@ -41,9 +43,12 @@ getInventoryPlotByClassPresence<-function(result_filtered){
       legend.text = element_text(size = 16)
     )
   
+
+  
+  
   
   plot + scale_x_continuous(limits = c(0, NA)) # Ensures x-axis starts at 0
-  
+  rm(result_filtered)
   return(plot)
 
 }

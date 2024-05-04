@@ -1,10 +1,4 @@
-      # Install the 'here' package if you haven't already
-  # install.packages("here")
-  
-  #roxygen2::roxygenise()
-  #runApp()
-  
-  
+
   cat("app.R:  Loading libraries\n")
   source("loadLibraries.R")
   loadLibraries() # Load all libraries
@@ -32,6 +26,7 @@
   source("getInventoryPlotByClassPresence.R"); #Returns Plot with  data grouped by presence|ausence
   source("getInventoryPlotByFamilyPresence.R"); #Returns Plot with  data grouped by presence|ausence
   source("getPieGraphs.R"); #Returns 3 PIE GRAPHS WITH DISTRIBUCION IN taxonomy in that study
+  
   
   # Remove all objects from the global environment
   rm(list = ls())
@@ -72,7 +67,7 @@
 
    
    # head(assembleages_filtered)
-   
+    
    # Define a reactive value to store the map
     mapToPlot <- reactiveVal()
     map <- reactiveVal()
@@ -229,11 +224,16 @@
                )
              )
           )  #End tabsetPanel
+          
         ) #End UI-fluidPage
+    cat(" Memoria  Memoria usada tras cargar datos y menus ")
     
+    cat (" \n")
    
   # Server
+
   server <- function(input, output,session) {
+    
     # Initialize reactive values
     studyClickedDataReact <- reactiveVal()
     studiesRelatedDataReact <- reactiveVal()
@@ -251,14 +251,14 @@
     pieSpecieOrderReact <- reactiveVal()
     pieSpecieFamilyReact <- reactiveVal()
     
-    
+    cat(" Memoria  Memoria usada tras de crear variables globales "); print(mem_used()); cat("\n"); cat (" \n")
   
     
     # Observe click events on the map and execute these actions
     observeEvent(input$map_marker_click, {
       
       #Extract info from map with clicked tear
-          click <- input$map_marker_click
+        click <- input$map_marker_click
         infoFromIDStudy <- filter(assembleages_filtered, id_study == click$id)
        
       #React when is clicked some tear with some study
@@ -293,7 +293,7 @@
 ###########################################################################          
  #Request info about each specie according study clicked
     output$givemeGbifInfo <- DT::renderDataTable({
-
+      
       speciesList <- taxon %>% 
         filter(id_study == infoFromIDStudy$id_study) %>% 
         dplyr::select(taxon_clean, kingdom, phylum, class, order, family, genus, IsGymnosperm) %>%
@@ -347,7 +347,8 @@
 ###########################################################################          
          
         # Request inventory of taxon
-              output$speciesStudyMatrixOutput <- renderDataTable({
+                output$speciesStudyMatrixOutput <- renderDataTable({
+                
                 # Render the DataTable
                  dataframeMatrix <- speciesStudyMatrix(assembleages, taxon, click$id)
                  matrixDataframe <- dataframeMatrix$data
@@ -359,15 +360,16 @@
                   HTML(matrixTittle)
                 })
                 
+                cat(" Memoria  Memoria usada tras crear matriz de datos speciesStudyMatrixOutput "); print(mem_used()); cat("\n"); cat (" \n")
                 # Return the DataTable
                 #datatable(matrixDataframe, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
                 datatable(matrixDataframe, escape = FALSE, options = list(dom = 't', pageLength = 100, scrollX = TRUE))
+                
               })
   
-          
-  
+          browser()
           #Extract data for study ploats for specific id_study   
-          dataTaxonAsembleagesByStudy <- filterDataByIdstudy(taxon,assembleages,infoFromIDStudy$id_study)                 
+              dataTaxonAsembleagesByStudy <- filterDataByIdstudy(taxon,assembleages,infoFromIDStudy$id_study)                 
           
           #React when is clicked Graphics with plot
           output$plotRichness <- renderPlotly({
@@ -386,24 +388,30 @@
           # })
           
           output$inventoryPlotByClassPresence <- renderPlotly({
+            
             cat("getInventoryPlotByClassPresence.R: Creating graphics by Class presence\n")
-            inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)#assembleages_filtered
+            inventoryPlotByClassPresence <- getInventoryPlotByClassPresence(mergedByClass)
             inventoryPlotByClassPresenceReact(inventoryPlotByClassPresence)
+            cat(" Memoria  Memoria usada tras crear gráficos de plot inventoryPlotByClassPresence "); print(mem_used()); cat("\n"); cat (" \n")
+            
             inventoryPlotByClassPresence
           })          
           
           output$inventoryPlotByOrderPresence <- renderPlotly({
             cat("getInventoryPlotByOrderPresence.R: Creating graphics by Order presence\n")
-            inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)#assembleages_filtered
+            inventoryPlotByOrderPresence <- getInventoryPlotByOrderPresence(mergedByOrder)
             inventoryPlotByOrderPresenceReact(inventoryPlotByOrderPresence)
+            cat(" Memoria  Memoria usada tras crear gráficos de plot inventoryPlotByOrderPresence "); print(mem_used()); cat("\n"); cat (" \n")
             inventoryPlotByOrderPresence
-          })          
-          
+          }) 
+      
           
           output$inventoryPlotByFamilyPresence <- renderPlotly({
+            
             cat("getInventoryPlotByFamilyPresence.R: Creating graphics by Family presence\n")
-            inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)#assembleages_filtered
+            inventoryPlotByFamilyPresence <- getInventoryPlotByFamilyPresence(mergedByFamily)
             inventoryPlotByFamilyPresenceReact(inventoryPlotByFamilyPresence)
+            cat(" Memoria  Memoria usada tras crear gráficos de plot inventoryPlotByFamilyPresence "); print(mem_used()); cat("\n"); cat (" \n")
             inventoryPlotByFamilyPresence
           })
 
@@ -411,6 +419,7 @@
         
          output$popupInfo <- renderText({
           if (!is.null(marker_info$info)) {
+            
             # You can customize how you want to display the information
             # For example, you may want to format it as a table or list
             paste("Clicked Marker Info:", toString(marker_info$info))
@@ -435,13 +444,15 @@
         # Update the reactive values
          studyClickedDataReact(result$assemblagesCommon)  # Set value using ()
          studiesRelatedDataReact(result$assemblagesUnique)  # Set value using ()
-
+         cat(" Memoria  Memoria usada tras analizar item clickado\n"); print(mem_used()); cat("\n"); cat (" \n")
+         
 
         
     })#End of Observe event function
     
     # Define a reactive expression that updates with input$timeRange
     filterDataByAge <- reactive({
+      
       req(input$timeRange) # Ensure input$timeRange is available
       filtered <- mergedAssembleagesTaxonByTime %>% 
         filter(age >= input$timeRange[1] & age <= input$timeRange[2])
@@ -453,9 +464,11 @@
     #    Call function to create my map and plot it      #
     ######################################################
       output$map <- renderLeaflet({
+        
           map_info  <- renderMap(assembleages_filtered) 
           map <- map_info$map
           clickedInfo <- map_info$data
+          cat(" Memoria  Memoria usada tras crear plot principal "); print(mem_used()); cat("\n"); cat (" \n")
             if (!is.null(map)) {
               map
             }
@@ -467,55 +480,70 @@
     #    Plot general graphics                           #
     ######################################################  
       output$plotInventoryByStageGeneral <- renderPlotly({
+        cat(" Memoria  Memoria usada antes de crear gráficos general "); print(mem_used()); cat("\n"); cat (" \n")
         cat("getplotInventoryByStageGeneral.R: Creating graphics by Stage\n")
         mergedAssembleagesTaxon<-filterDataByAge()          
         plotInventoryByStageGeneral <- getplotInventoryByStageGeneral(mergedAssembleagesTaxon)
+        rm(mergedAssembleagesTaxon)
         plotInventoryByStageGeneralReact(plotInventoryByStageGeneral)
 
         # Convert ggplot to plotly
         plotLYInventoryByStageGeneral <- ggplotly(plotInventoryByStageGeneral)
+        rm(plotInventoryByStageGeneral)
         # Modify layout to add legend at the bottom
         plotLYInventoryByStageGeneral <- plotLYInventoryByStageGeneral %>%
           layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
         
         plotLYInventoryByStageGeneral<- ggplotly(plotLYInventoryByStageGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        cat(" Memoria  Memoria usada tras de crear gráfico plotLYInventoryByStageGeneral "); print(mem_used()); cat("\n"); cat (" \n")
         plotLYInventoryByStageGeneral
       })
 
       output$plotRichnessByDisturbanceAgeGeneral <- renderPlotly({
+        
         cat("getplotRichnessByDisturbanceAgeGeneral: Creating graphics Disturbance by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotRichnessByDisturbanceAgeGeneral <- getplotRichnessByDisturbanceAgeGeneral(mergedAssembleagesTaxon)
+        rm(mergedAssembleagesTaxon)
         plotRichnessByDisturbanceAgeGeneralReact(plotRichnessByDisturbanceAgeGeneral)
         
         
         # Convert ggplot to plotly
         plotLYRichnessByDisturbanceAgeGeneral <- ggplotly(plotRichnessByDisturbanceAgeGeneral)
+        rm(plotRichnessByDisturbanceAgeGeneral)
         # Modify layout to add legend at the bottom
         plotLYRichnessByDisturbanceAgeGeneral <- plotLYRichnessByDisturbanceAgeGeneral %>%
           layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
         
         plotLYRichnessByDisturbanceAgeGeneral<- ggplotly(plotLYRichnessByDisturbanceAgeGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        cat(" Memoria  Memoria usada tras de crear gráfico plotLYRichnessByDisturbanceAgeGeneral "); print(mem_used()); cat("\n"); cat (" \n")
         plotLYRichnessByDisturbanceAgeGeneral
+        
       })
       
       
       output$plotInventoryByStudyCommonTaxonGeneral <- renderPlotly({
+        
         cat("plotInventoryByStudyCommonTaxonGeneral: Creating graphics by General\n")
         mergedAssembleagesTaxon<-filterDataByAge()
         plotInventoryByStudyCommonTaxonGeneral <- getplotInventoryByStudyCommonTaxonGeneral(mergedAssembleagesTaxon)
+        rm(mergedAssembleagesTaxon)
         plotInventoryByStudyCommonTaxonGeneralReact(plotInventoryByStudyCommonTaxonGeneral)
         
         # Convert ggplot to plotly
         plotLYInventoryByStudyCommonTaxonGeneral <- ggplotly(plotInventoryByStudyCommonTaxonGeneral)
+        rm(plotInventoryByStudyCommonTaxonGeneral)
         # Modify layout to add legend at the bottom
         plotLYInventoryByStudyCommonTaxonGeneral <- plotLYInventoryByStudyCommonTaxonGeneral %>%
           layout(legend = list(orientation = "h", x = 0, y = -0.2))  # Add legend at the bottom
         
         
         plotLYInventoryByStudyCommonTaxonGeneral<- ggplotly(plotLYInventoryByStudyCommonTaxonGeneral) %>% layout(boxmode = 'group', boxgap = 0.1)
+        cat(" Memoria  Memoria usada tras de crear gráfico plotLYInventoryByStudyCommonTaxonGeneral "); print(mem_used()); cat("\n"); cat (" \n")
         plotLYInventoryByStudyCommonTaxonGeneral
       })
+      
+      
 
 
 ######################################################
@@ -800,5 +828,7 @@
       )
       
   }#End of server function  
+  
+  
+  
   shinyApp(ui, server)
-          
