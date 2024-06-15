@@ -41,6 +41,8 @@ studyClicked <- function(assembleages, idStudyUnique) {
       "Sampling method" = sampling_method
     )
   
+
+  
   # Create a hyperlink for the Citation field
   assemblagesCommon <- assemblagesCommon %>% select("Database", "Citation","DOI","url", "Study ID", "Number of communities", "Coord accuracy", "Study year", "Common taxon",
         "Metric","Metric source","Sampling method")
@@ -61,7 +63,7 @@ studyClicked <- function(assembleages, idStudyUnique) {
   # Modifying Citation column to include HTML markup and opened in new navigator window
     assemblagesCommon <- assemblagesCommon %>% mutate(DOI = paste0('<html><a href="', DOI, '" target="_blank">', DOI, '</a></html>'))
     assemblagesCommon <- assemblagesCommon %>% mutate(url = paste0('<html><a href="', url, '" target="_blank">', url, '</a></html>'))
-   
+
  
   
   # Rename columns
@@ -69,7 +71,7 @@ studyClicked <- function(assembleages, idStudyUnique) {
   
   # Remove the variables from memory
   rm(assembleages,assemblages_ori)
-  
+
   return(list(assemblagesCommon = assemblagesCommon, assemblagesUnique = assemblagesUnique))
   
 }

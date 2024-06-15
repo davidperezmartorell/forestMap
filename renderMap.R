@@ -56,7 +56,8 @@ renderMap <- function(inputData) {
       metric = first(metric),
       citation = first(citation),
       database = first(database),
-      n_comm_available = n_distinct(n_comm_available),
+      n_comm_available = n_distinct(id_comm),
+      #n_comm_available = n_comm_available,
       exact_lat = first(exact_lat),  # Include exact_lat column
       exact_long = first(exact_long),  # Include exact_long column
       study_year = first(study_year),
@@ -65,7 +66,7 @@ renderMap <- function(inputData) {
   
   summary_data$exact_lat <- as.numeric(summary_data$exact_lat)
   summary_data$exact_long <- as.numeric(summary_data$exact_long)
-  
+  str(inputData2)
 
   # Create a leaflet map with marker clusters
   map <- leaflet(data = summary_data) %>%
@@ -86,7 +87,7 @@ renderMap <- function(inputData) {
       stroke = TRUE,
       popup = ~paste(
         "Year: ", study_year, "<br>",
-        "Number of assemblages: ", n_comm_available, "<br>",
+        "Number of assemblages: ", n_comm_available, "<br>",  #
         "Study: ", id_study, "<br>",
         "Stage through the time: ", possible_alternatives, "<br>",
         "Common taxon: ", study_common_taxon_clean, "<br>",
@@ -137,6 +138,9 @@ renderMap <- function(inputData) {
             lat = mean(summary_data$exact_lat, na.rm = TRUE), 
             zoom = 3) 
 
+  # Remove the variables from memory
+  rm(inputData,inputData2, world)
+  
   return(list(map = map, data = summary_data))
 }
 

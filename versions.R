@@ -40,7 +40,8 @@ fluidRow(
   column(12, HTML("<h6> Version 1.3.5 04/05/2024 Improve memory use in filters and mistakes in axis graphs</h6>")),
   column(12, HTML("<h6> Version 1.3.6 15/05/2024 Add tendency graphs in first general graphic</h6>")),
   column(12, HTML("<h6> Version 1.3.7 22/05/2024 Add tendency graphs all graphics</h6>")),
-  column(12, HTML("<h6> Version 1.3.8 15/06/2024 Disable download buttons</h6>")),
+  column(12, HTML("<h6> Version 1.3.8 07/06/2024 Disable download buttons</h6>")),
+  column(12, HTML("<h6> Version 1.3.9 15/06/2024 Solved mistake number of communities</h6>")),
   
   
 )#Fin pie de pagina fluidRow

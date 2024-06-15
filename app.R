@@ -52,9 +52,9 @@
      assembleages_filtered <- dplyr::select(assembleages,"id","id_comm", "id_study", "study_year", "stage", "study_common_taxon_clean", "taxon_level", "exact_lat", "exact_long", "country", "disturbance1_age_clean",
                                           "country", "disturbance1_age_clean", "age", "n_comm_available", "metric", "citation", "database")
      assembleages_filtered <- assembleages_filtered %>% unique()
-   
+
    cat("app.R: After filter, there are loaded ", nrow(assembleages_filtered), "values from assembleages\n")
-   
+  
    #Load mix of taxon and assembleages by d_comm to create general graphics
    cat("app.R: Creating a register combining taxon and assembleages \n")
    mergedAssembleagesTaxonByTime <- data$mergedAssembleagesTaxon
@@ -118,9 +118,9 @@
                 //$('#downloadHTML_DISABLED').attr('title', 'Please, navigate all the data before download');
                 //$('#downloadPDF_DISABLED').attr('title', 'Please, navigate all the data before download');
                 //$('#downloadCSV_DISABLED').attr('title', 'Please, navigate all the data before download');
-                $('#downloadHTML_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
-                $('#downloadPDF_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
-                $('#downloadCSV_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
+                $('#downloadHTML_DISABLED').attr('disabled', true).addClass('disabled-button').attr('title', 'Disabled for security reasons');
+                $('#downloadPDF_DISABLED').attr('disabled', true).addClass('disabled-button').attr('title', 'Disabled for security reasons');
+                $('#downloadCSV_DISABLED').attr('disabled', true).addClass('disabled-button').attr('title', 'Disabled for security reasons');
             });"))),
           ),  #End of tags$head
 
@@ -264,13 +264,13 @@
         click <- input$map_marker_click
         infoFromIDStudy <- filter(assembleages_filtered, id_study == click$id)
        
-      #React when is clicked some tear with some study
+      #React when is clicked some item with some study
         #Extract result
           
            result <- studyClicked(assembleages, click$id)
            studyClickedData <- result$assemblagesCommon
            studiesRelatedData <- result$assemblagesUnique
-           
+
       #Filter values to plot study graph by presence|absence
            mergedByFamily <- filter(mergedByFamily, id_study == click$id)
            mergedByClass <- filter(mergedByClass, id_study == click$id)
@@ -421,6 +421,7 @@
       
         
          output$popupInfo <- renderText({
+           
           if (!is.null(marker_info$info)) {
             
             # You can customize how you want to display the information
@@ -434,7 +435,7 @@
         
         output$clickedInfo <- renderPrint({
           # Print the clicked popup information
-          print(clickedIconData$data)
+           print(clickedIconData$data)
         })
 
 
@@ -467,7 +468,7 @@
     #    Call function to create my map and plot it      #
     ######################################################
       output$map <- renderLeaflet({
-        
+
           map_info  <- renderMap(assembleages_filtered) 
           map <- map_info$map
           clickedInfo <- map_info$data
