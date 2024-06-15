@@ -115,9 +115,12 @@
               tags$script(HTML("
             $(document).on('shiny:connected', function() {
                 // Add title attributes when the Shiny session is connected
-                $('#downloadHTML').attr('title', 'Please, navigate all the data before download');
-                $('#downloadPDF').attr('title', 'Please, navigate all the data before download');
-                $('#downloadCSV').attr('title', 'Please, navigate all the data before download');
+                //$('#downloadHTML_DISABLED').attr('title', 'Please, navigate all the data before download');
+                //$('#downloadPDF_DISABLED').attr('title', 'Please, navigate all the data before download');
+                //$('#downloadCSV_DISABLED').attr('title', 'Please, navigate all the data before download');
+                $('#downloadHTML_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
+                $('#downloadPDF_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
+                $('#downloadCSV_DISABLED').attr('disabled', true).attr('title', 'Disabled for security reasons');
             });"))),
           ),  #End of tags$head
 
@@ -127,15 +130,15 @@
                    HTML("<h3 class='custom-title'>FORESTMAP Forest disturbances inventories</h3>")
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
-                   downloadButton("downloadHTML", label = "HTML"),
+                   downloadButton("downloadHTML_DISABLED", label = "HTML"),
                    align = "center"
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
-                   downloadButton("downloadPDF", label = "PDF"),
+                   downloadButton("downloadPDF_DISABLED", label = "PDF"),
                    align = "center"
             ),
             column(width = 1, # Adjust based on the size of your button or desired alignment
-                   downloadButton("downloadCSV", label = "CSV"),
+                   downloadButton("downloadCSV_DISABLED", label = "CSV"),
                    align = "center"
             )
           ),
@@ -367,7 +370,7 @@
                 
               })
   
-          browser()
+          
           #Extract data for study ploats for specific id_study   
               dataTaxonAsembleagesByStudy <- filterDataByIdstudy(taxon,assembleages,infoFromIDStudy$id_study)                 
           
@@ -552,250 +555,252 @@
 
       # Direct assignment of downloadHandler to output$downloadHTML
       output$downloadHTML <- downloadHandler(
-        filename = function() {
-          paste0("report-", Sys.Date(), ".html")
-        },
-        content = function(file) {
-
-          #Request react information
-            # Access the current value of reactive variables
-            studyClickedData <- studyClickedDataReact()  
-            studiesRelatedData <- studiesRelatedDataReact()  
-            richnessPlotData <- richnessPlotReact()
-            inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
-            inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
-            inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
-            matrixDataframeData <- matrixDataframeReact()
-            speciesListData <- speciesListReact()
-            pieSpecieClass <- pieSpecieClassReact()
-            pieSpecieOrder <- pieSpecieOrderReact()   
-            pieSpecieFamily <- pieSpecieFamilyReact()
-
-          #Convert images
-              # Convert to png for the richness plot
-              plotFilePathRichness <- tempfile(fileext = ".png")
-              ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
-
-              # Save to png for the richness plot
-              plotFilePathClassPresence <- tempfile(fileext = ".png")
-              ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
-              # Save the inventory plot by class to a file
-              plotFilePathOrderPresence <- tempfile(fileext = ".png")
-              ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
-              
-              # Save the inventory plot by class to a file
-              plotFilePathFamilyPresence <- tempfile(fileext = ".png")
-              ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
-              
-
-              #Create pie plots
-              plotpieSpecieClass <- tempfile(fileext = ".png")
-              ggsave(plotpieSpecieClass, plot = pieSpecieClass, width = 6, height = 4, dpi = 300)
-              plotpieSpecieOrder <- tempfile(fileext = ".png")
-              ggsave(plotpieSpecieOrder, plot = pieSpecieOrder, width = 6, height = 4, dpi = 300)
-              plotpieSpecieFamily <- tempfile(fileext = ".png")
-              ggsave(plotpieSpecieFamily, plot = pieSpecieFamily, width = 6, height = 4, dpi = 300)              
-
-           #Generate images as html
-            # Generate HTML content for each data table
-            studyClickedDataTableHtml <- htmlTable(studyClickedData)
-            studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
-            
-            matrixDataframeHtml<-htmlTable(matrixDataframeData)
-
-            speciesListHtml<-htmlTable(speciesListData)
-
-
-            
-                        
-          # Combine HTML parts into one HTML document
-          htmlContent <- paste(
-            "<html><body><h1>Report Title</h1>",
-            "<p>Here is the dynamic content from our Shiny app.</p>",
-            "<h2>Study Clicked Data</h2>",
-            studyClickedDataTableHtml,
-            "<h2>Studies Related Data</h2>",
-            studiesRelatedDataTableHtml,
-            "<h2>Species matrix</h2>",
-            matrixDataframeHtml,
-          
-            sprintf('<img src="%s" alt="Specie list by Class">', plotpieSpecieClass),
-
-            sprintf('<img src="%s" alt="Specie list by Order">', plotpieSpecieOrder),
-
-            sprintf('<img src="%s" alt="Specie list by Family">', plotpieSpecieFamily),
-            "<h2>Taxon table</h2>",          
-            speciesListHtml,
-
-            sprintf('<img src="%s" alt="Richness Plot">', plotFilePathRichness),
-            
-            sprintf('<img src="%s" alt="Class presence Plot">', plotFilePathClassPresence),
-            
-            sprintf('<img src="%s" alt="Order presence Plot">', plotFilePathOrderPresence),
-            
-            sprintf('<img src="%s" alt="Family presence Plot">', plotFilePathFamilyPresence),
-            "</body></html>",
-            sep = "\n"
-          )
-          
-          # Write the HTML content to the file specified by downloadHandler
-          writeLines(htmlContent, file)
-        }
+        #DISABLED UNTIL AUTHORS PERMISSIONS
+        # filename = function() {
+        #   paste0("report-", Sys.Date(), ".html")
+        # },
+        # content = function(file) {
+        # 
+        #   #Request react information
+        #     # Access the current value of reactive variables
+        #     studyClickedData <- studyClickedDataReact()  
+        #     studiesRelatedData <- studiesRelatedDataReact()  
+        #     richnessPlotData <- richnessPlotReact()
+        #     inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
+        #     inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
+        #     inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
+        #     matrixDataframeData <- matrixDataframeReact()
+        #     speciesListData <- speciesListReact()
+        #     pieSpecieClass <- pieSpecieClassReact()
+        #     pieSpecieOrder <- pieSpecieOrderReact()   
+        #     pieSpecieFamily <- pieSpecieFamilyReact()
+        # 
+        #   #Convert images
+        #       # Convert to png for the richness plot
+        #       plotFilePathRichness <- tempfile(fileext = ".png")
+        #       ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
+        # 
+        #       # Save to png for the richness plot
+        #       plotFilePathClassPresence <- tempfile(fileext = ".png")
+        #       ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
+        #       # Save the inventory plot by class to a file
+        #       plotFilePathOrderPresence <- tempfile(fileext = ".png")
+        #       ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
+        #       
+        #       # Save the inventory plot by class to a file
+        #       plotFilePathFamilyPresence <- tempfile(fileext = ".png")
+        #       ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
+        #       
+        # 
+        #       #Create pie plots
+        #       plotpieSpecieClass <- tempfile(fileext = ".png")
+        #       ggsave(plotpieSpecieClass, plot = pieSpecieClass, width = 6, height = 4, dpi = 300)
+        #       plotpieSpecieOrder <- tempfile(fileext = ".png")
+        #       ggsave(plotpieSpecieOrder, plot = pieSpecieOrder, width = 6, height = 4, dpi = 300)
+        #       plotpieSpecieFamily <- tempfile(fileext = ".png")
+        #       ggsave(plotpieSpecieFamily, plot = pieSpecieFamily, width = 6, height = 4, dpi = 300)              
+        # 
+        #    #Generate images as html
+        #     # Generate HTML content for each data table
+        #     studyClickedDataTableHtml <- htmlTable(studyClickedData)
+        #     studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
+        #     
+        #     matrixDataframeHtml<-htmlTable(matrixDataframeData)
+        # 
+        #     speciesListHtml<-htmlTable(speciesListData)
+        # 
+        # 
+        #     
+        #                 
+        #   # Combine HTML parts into one HTML document
+        #   htmlContent <- paste(
+        #     "<html><body><h1>Report Title</h1>",
+        #     "<p>Here is the dynamic content from our Shiny app.</p>",
+        #     "<h2>Study Clicked Data</h2>",
+        #     studyClickedDataTableHtml,
+        #     "<h2>Studies Related Data</h2>",
+        #     studiesRelatedDataTableHtml,
+        #     "<h2>Species matrix</h2>",
+        #     matrixDataframeHtml,
+        #   
+        #     sprintf('<img src="%s" alt="Specie list by Class">', plotpieSpecieClass),
+        # 
+        #     sprintf('<img src="%s" alt="Specie list by Order">', plotpieSpecieOrder),
+        # 
+        #     sprintf('<img src="%s" alt="Specie list by Family">', plotpieSpecieFamily),
+        #     "<h2>Taxon table</h2>",          
+        #     speciesListHtml,
+        # 
+        #     sprintf('<img src="%s" alt="Richness Plot">', plotFilePathRichness),
+        #     
+        #     sprintf('<img src="%s" alt="Class presence Plot">', plotFilePathClassPresence),
+        #     
+        #     sprintf('<img src="%s" alt="Order presence Plot">', plotFilePathOrderPresence),
+        #     
+        #     sprintf('<img src="%s" alt="Family presence Plot">', plotFilePathFamilyPresence),
+        #     "</body></html>",
+        #     sep = "\n"
+        #   )
+        #   
+        #   # Write the HTML content to the file specified by downloadHandler
+        #   writeLines(htmlContent, file)
+        # }
       )
 
       ######################################################
       #    Create PDF                                      #
       ######################################################       
       output$downloadPDF <- downloadHandler(
-        filename = function() {
-          paste0("report-", Sys.Date(), ".pdf")
-        },
-        content = function(file) {
-                        
-                        
-                        #HERE THE SAME CODE COPIED FROM HTML CODE EXPORT
-                        #Request react information
-                        # Access the current value of reactive variables
-                        studyClickedData <- studyClickedDataReact()  
-                        studiesRelatedData <- studiesRelatedDataReact()  
-                        richnessPlotData <- richnessPlotReact()
-                        inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
-                        inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
-                        inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
-                        matrixDataframeData <- matrixDataframeReact()
-                        speciesListData <- speciesListReact()
-                        pieSpecieClass <- pieSpecieClassReact()
-                        pieSpecieOrder <- pieSpecieOrderReact()   
-                        pieSpecieFamily <- pieSpecieFamilyReact()
-                        
-                        #Convert images
-                        # Convert to png for the richness plot
-                        plotFilePathRichness <- tempfile(fileext = ".png")
-                        ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
-
-                        
-                        # Save to png for the richness plot
-                        plotFilePathClassPresence <- tempfile(fileext = ".png")
-                        ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
-                        # Save the inventory plot by class to a file
-                        plotFilePathOrderPresence <- tempfile(fileext = ".png")
-                        ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
-                        
-                        # Save the inventory plot by class to a file
-                        plotFilePathFamilyPresence <- tempfile(fileext = ".png")
-                        ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
-                        
-  
-                        #Generate images as html
-                        # Generate HTML content for each data table
-                        studyClickedDataTableHtml <- htmlTable(studyClickedData)
-                        studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
-                        
-                        matrixDataframeHtml<-htmlTable(matrixDataframeData)
-                        
-                        speciesListHtml<-htmlTable(speciesListData)
-                        
-                        
-                        # Render the ggplot object
-                        plotpieSpecieClass <- ggplot2::ggplot_build(pieSpecieClass)$plot
-                        plotpieSpecieOrder <- ggplot2::ggplot_build(pieSpecieOrder)$plot
-                        plotpieSpecieFamily <- ggplot2::ggplot_build(pieSpecieFamily)$plot
-                        
-                        # Save the rendered plot as a PNG file
-                        plotpieSpecieClass_path <- tempfile(fileext = ".png")
-                        ggsave(plotpieSpecieClass_path, plot = plotpieSpecieClass, width = 6, height = 4, dpi = 300)
-
-                        plotpieSpecieOrder_path <- tempfile(fileext = ".png")
-                        ggsave(plotpieSpecieOrder_path, plot = plotpieSpecieOrder, width = 6, height = 4, dpi = 300)
-
-                        plotpieSpecieFamily_path <- tempfile(fileext = ".png")
-                        ggsave(plotpieSpecieFamily_path, plot = plotpieSpecieFamily, width = 6, height = 4, dpi = 300)
-                        
-        # Define the path for the temporary .Rmd file
-        tempRmdPath <- tempfile(fileext = ".Rmd")
-
-        # Create and write content to the .Rmd file
-        rmdContent <- c(
-          "---",
-          "title: 'FORESTMAP Plot maps from particular inventory with studies and inventories'",
-          "output: pdf_document",
-          "---",
-          "",
-          "This report is generated based on user input.",
-          
-          "## Study Clicked Data Table",
-          "```{r study-clicked-data-table, echo=FALSE}",
-          "knitr::kable(studyClickedData)",
-          "```",
-          "## Studies Related Data Table",
-          "```{r studies-related-data-table, echo=FALSE}",
-            "knitr::kable(studiesRelatedData)",
-          "```",
-          
-
-          "```{r inventory-plot-pie-by-class, echo=FALSE}",
-          "knitr::include_graphics(plotpieSpecieClass_path)",
-
-          "```{r inventory-plot-pie-by-family, echo=FALSE}",
-          "knitr::include_graphics(plotpieSpecieFamily_path)",
-
-          "```{r inventory-plot-pie-by-order, echo=FALSE}",
-          "knitr::include_graphics(plotpieSpecieOrder_path)",
-          
-
-          "## Matrix Dataframe",
-          "```{r matrix-dataframe, echo=FALSE}",
-          "knitr::kable(matrixDataframeData)",
-          "```",
-          "## Species List Data",
-          "```{r species-list-data, echo=FALSE}",
-          "knitr::kable(speciesListData)",
-          "```",
-
-          "```{r inventory-plot-by-order, echo=FALSE}",
-          "inventoryPlotByOrderPresenceData",
-          "```",
-
-          "```{r inventory-plot-by-class, echo=FALSE}",
-          "inventoryPlotByClassPresenceData",
-          "```",
-
-          "```{r inventory-plot-by-family, echo=FALSE}",
-          "inventoryPlotByFamilyPresenceData",
-          "```",
-
-          "```{r richness-plot, echo=FALSE}",
-          "knitr::include_graphics(plotFilePathRichness)",
-          "```",
-
-          "```{r class-presence-plot, echo=FALSE}",
-          "knitr::include_graphics(plotFilePathClassPresence)",
-          "```"
-        )#End of contents to add in pdf
-        # R Markdown content for plots
-        
-        # Write the Rmd content to the temp Rmd file
-        writeLines(rmdContent, con = tempRmdPath)
-        
-        
-        # Prepare parameters to pass to the R Markdown document
-        params <- list(
-          studyClickedDataTableHtml = studyClickedDataTableHtml,
-          studiesRelatedDataTableHtml = studiesRelatedDataTableHtml,
-          matrixDataframeData = matrixDataframeData,
-          speciesListData = speciesListData,
-            inventoryPlotByOrderPresenceData = inventoryPlotByOrderPresenceData,
-          inventoryPlotByClassPresenceData = inventoryPlotByClassPresenceData,
-          inventoryPlotByFamilyPresenceData = inventoryPlotByFamilyPresenceData,
-          plotFilePathRichness = plotFilePathRichness,
-          plotFilePathClassPresence = plotFilePathClassPresence
-        )
-        
-        
-        # Render the R Markdown document to PDF
-        # Correctly use tempRmdPath in the render call
-          rmarkdown::render(tempRmdPath, output_file = file, params = params, envir = new.env())
-       }
+       #DISABLED UNTIL AUTHORS PERMISSIONS
+       #  filename = function() {
+       #    paste0("report-", Sys.Date(), ".pdf")
+       #  },
+       #  content = function(file) {
+       #                  
+       #                  
+       #                  #HERE THE SAME CODE COPIED FROM HTML CODE EXPORT
+       #                  #Request react information
+       #                  # Access the current value of reactive variables
+       #                  studyClickedData <- studyClickedDataReact()  
+       #                  studiesRelatedData <- studiesRelatedDataReact()  
+       #                  richnessPlotData <- richnessPlotReact()
+       #                  inventoryPlotByOrderPresenceData <- inventoryPlotByOrderPresenceReact()
+       #                  inventoryPlotByClassPresenceData <- inventoryPlotByClassPresenceReact()
+       #                  inventoryPlotByFamilyPresenceData <- inventoryPlotByFamilyPresenceReact()
+       #                  matrixDataframeData <- matrixDataframeReact()
+       #                  speciesListData <- speciesListReact()
+       #                  pieSpecieClass <- pieSpecieClassReact()
+       #                  pieSpecieOrder <- pieSpecieOrderReact()   
+       #                  pieSpecieFamily <- pieSpecieFamilyReact()
+       #                  
+       #                  #Convert images
+       #                  # Convert to png for the richness plot
+       #                  plotFilePathRichness <- tempfile(fileext = ".png")
+       #                  ggsave(plotFilePathRichness, plot = richnessPlotData, width = 6, height = 4, dpi = 300)
+       # 
+       #                  
+       #                  # Save to png for the richness plot
+       #                  plotFilePathClassPresence <- tempfile(fileext = ".png")
+       #                  ggsave(plotFilePathClassPresence, plot = inventoryPlotByClassPresenceData, width = 6, height = 4, dpi = 300)
+       #                  # Save the inventory plot by class to a file
+       #                  plotFilePathOrderPresence <- tempfile(fileext = ".png")
+       #                  ggsave(plotFilePathOrderPresence, plot = inventoryPlotByOrderPresenceData, width = 6, height = 4, dpi = 300)
+       #                  
+       #                  # Save the inventory plot by class to a file
+       #                  plotFilePathFamilyPresence <- tempfile(fileext = ".png")
+       #                  ggsave(plotFilePathFamilyPresence, plot = inventoryPlotByFamilyPresenceData, width = 6, height = 4, dpi = 300)
+       #                  
+       # 
+       #                  #Generate images as html
+       #                  # Generate HTML content for each data table
+       #                  studyClickedDataTableHtml <- htmlTable(studyClickedData)
+       #                  studiesRelatedDataTableHtml <- htmlTable(studiesRelatedData)
+       #                  
+       #                  matrixDataframeHtml<-htmlTable(matrixDataframeData)
+       #                  
+       #                  speciesListHtml<-htmlTable(speciesListData)
+       #                  
+       #                  
+       #                  # Render the ggplot object
+       #                  plotpieSpecieClass <- ggplot2::ggplot_build(pieSpecieClass)$plot
+       #                  plotpieSpecieOrder <- ggplot2::ggplot_build(pieSpecieOrder)$plot
+       #                  plotpieSpecieFamily <- ggplot2::ggplot_build(pieSpecieFamily)$plot
+       #                  
+       #                  # Save the rendered plot as a PNG file
+       #                  plotpieSpecieClass_path <- tempfile(fileext = ".png")
+       #                  ggsave(plotpieSpecieClass_path, plot = plotpieSpecieClass, width = 6, height = 4, dpi = 300)
+       # 
+       #                  plotpieSpecieOrder_path <- tempfile(fileext = ".png")
+       #                  ggsave(plotpieSpecieOrder_path, plot = plotpieSpecieOrder, width = 6, height = 4, dpi = 300)
+       # 
+       #                  plotpieSpecieFamily_path <- tempfile(fileext = ".png")
+       #                  ggsave(plotpieSpecieFamily_path, plot = plotpieSpecieFamily, width = 6, height = 4, dpi = 300)
+       #                  
+       #  # Define the path for the temporary .Rmd file
+       #  tempRmdPath <- tempfile(fileext = ".Rmd")
+       # 
+       #  # Create and write content to the .Rmd file
+       #  rmdContent <- c(
+       #    "---",
+       #    "title: 'FORESTMAP Plot maps from particular inventory with studies and inventories'",
+       #    "output: pdf_document",
+       #    "---",
+       #    "",
+       #    "This report is generated based on user input.",
+       #    
+       #    "## Study Clicked Data Table",
+       #    "```{r study-clicked-data-table, echo=FALSE}",
+       #    "knitr::kable(studyClickedData)",
+       #    "```",
+       #    "## Studies Related Data Table",
+       #    "```{r studies-related-data-table, echo=FALSE}",
+       #      "knitr::kable(studiesRelatedData)",
+       #    "```",
+       #    
+       # 
+       #    "```{r inventory-plot-pie-by-class, echo=FALSE}",
+       #    "knitr::include_graphics(plotpieSpecieClass_path)",
+       # 
+       #    "```{r inventory-plot-pie-by-family, echo=FALSE}",
+       #    "knitr::include_graphics(plotpieSpecieFamily_path)",
+       # 
+       #    "```{r inventory-plot-pie-by-order, echo=FALSE}",
+       #    "knitr::include_graphics(plotpieSpecieOrder_path)",
+       #    
+       # 
+       #    "## Matrix Dataframe",
+       #    "```{r matrix-dataframe, echo=FALSE}",
+       #    "knitr::kable(matrixDataframeData)",
+       #    "```",
+       #    "## Species List Data",
+       #    "```{r species-list-data, echo=FALSE}",
+       #    "knitr::kable(speciesListData)",
+       #    "```",
+       # 
+       #    "```{r inventory-plot-by-order, echo=FALSE}",
+       #    "inventoryPlotByOrderPresenceData",
+       #    "```",
+       # 
+       #    "```{r inventory-plot-by-class, echo=FALSE}",
+       #    "inventoryPlotByClassPresenceData",
+       #    "```",
+       # 
+       #    "```{r inventory-plot-by-family, echo=FALSE}",
+       #    "inventoryPlotByFamilyPresenceData",
+       #    "```",
+       # 
+       #    "```{r richness-plot, echo=FALSE}",
+       #    "knitr::include_graphics(plotFilePathRichness)",
+       #    "```",
+       # 
+       #    "```{r class-presence-plot, echo=FALSE}",
+       #    "knitr::include_graphics(plotFilePathClassPresence)",
+       #    "```"
+       #  )#End of contents to add in pdf
+       #  # R Markdown content for plots
+       #  
+       #  # Write the Rmd content to the temp Rmd file
+       #  writeLines(rmdContent, con = tempRmdPath)
+       #  
+       #  
+       #  # Prepare parameters to pass to the R Markdown document
+       #  params <- list(
+       #    studyClickedDataTableHtml = studyClickedDataTableHtml,
+       #    studiesRelatedDataTableHtml = studiesRelatedDataTableHtml,
+       #    matrixDataframeData = matrixDataframeData,
+       #    speciesListData = speciesListData,
+       #      inventoryPlotByOrderPresenceData = inventoryPlotByOrderPresenceData,
+       #    inventoryPlotByClassPresenceData = inventoryPlotByClassPresenceData,
+       #    inventoryPlotByFamilyPresenceData = inventoryPlotByFamilyPresenceData,
+       #    plotFilePathRichness = plotFilePathRichness,
+       #    plotFilePathClassPresence = plotFilePathClassPresence
+       #  )
+       #  
+       #  
+       #  # Render the R Markdown document to PDF
+       #  # Correctly use tempRmdPath in the render call
+       #    rmarkdown::render(tempRmdPath, output_file = file, params = params, envir = new.env())
+       # }
       )   
 
       
@@ -804,27 +809,28 @@
       ######################################################     
       # Direct assignment of downloadHandler to output$downloadCSV
       output$downloadCSV <- downloadHandler(
-        filename = function() {
-          paste0("report-", Sys.Date(), ".zip")
-        },
-        content = function(file) {
-          # Request react information
-          # Access the current value of reactive variables
-          studyClickedData <- studyClickedDataReact()  
-          studiesRelatedData <- studiesRelatedDataReact()  
-          matrixDataframeData <- matrixDataframeReact()
-          speciesListData <- speciesListReact()
-          
-          # Write each dataset to a separate CSV file
-          write.csv(studyClickedData, file = "studyClickedData.csv", row.names = FALSE)
-          write.csv(studiesRelatedData, file = "studiesRelatedData.csv", row.names = FALSE)
-          write.csv(matrixDataframeData, file = "matrixDataframeData.csv", row.names = FALSE)
-          write.csv(speciesListData, file = "speciesListData.csv", row.names = FALSE)
-          
-          # Create a zip file containing all CSV files
-          files_to_zip <- c("studyClickedData.csv", "studiesRelatedData.csv", "matrixDataframeData.csv", "speciesListData.csv")
-          zip(file, files_to_zip)
-        }
+        #DISABLED UNTIL AUTHORS PERMISSIONS
+        # filename = function() {
+        #   paste0("report-", Sys.Date(), ".zip")
+        # },
+        # content = function(file) {
+        #   # Request react information
+        #   # Access the current value of reactive variables
+        #   studyClickedData <- studyClickedDataReact()  
+        #   studiesRelatedData <- studiesRelatedDataReact()  
+        #   matrixDataframeData <- matrixDataframeReact()
+        #   speciesListData <- speciesListReact()
+        #   
+        #   # Write each dataset to a separate CSV file
+        #   write.csv(studyClickedData, file = "studyClickedData.csv", row.names = FALSE)
+        #   write.csv(studiesRelatedData, file = "studiesRelatedData.csv", row.names = FALSE)
+        #   write.csv(matrixDataframeData, file = "matrixDataframeData.csv", row.names = FALSE)
+        #   write.csv(speciesListData, file = "speciesListData.csv", row.names = FALSE)
+        #   
+        #   # Create a zip file containing all CSV files
+        #   files_to_zip <- c("studyClickedData.csv", "studiesRelatedData.csv", "matrixDataframeData.csv", "speciesListData.csv")
+        #   zip(file, files_to_zip)
+        # }
       )
       
   }#End of server function  

@@ -16,16 +16,23 @@ getplotInventoryByStageGeneral <- function(mergedAssembleagesTaxon) {
   
   # Calculate the number of values represented in the plot
   num_values <- nrow(result_filtered)
+
+  # Filtrar los datos donde stage sea "recovering"
+  recovering_data <- subset(result_filtered, stage == "recovering")
   
-  # Plotting the aggregated data with log values
+  # Crear el gráfico con todas las categorías de stage
   plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = stage)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 0.1) +
-    labs(title = paste("Taxon number by Stage from all the studies (", num_values, "values represented)"),x = "Age groups", y = "Taxon number",
-         fill = "Stage") +
+    labs(title = paste("Taxon number by Stage from all the studies (", num_values, "values represented)"), x = "Age groups", y = "Taxon number", fill = "Stage") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
     scale_x_discrete()
   
+  # Añadir la línea de tendencia solo con los datos filtrados
+  plotStage <- plotStage + 
+    geom_smooth(data = recovering_data, aes(x = age_group, y = richness, group = 1), method = "lm", color = "blue", se = FALSE) # Añadir línea de tendencia
+  
+
   # # Convert ggplot to plotly
   # plotlyPlot <- ggplotly(plotStage)
   

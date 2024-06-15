@@ -16,9 +16,9 @@ fluidRow(
   column(12, HTML("<h6> Version 1.0.0 01/12/2023 In testing phase. Creation of environment, form, and base map</h6>")),
   column(12, HTML("<h6> Version 1.0.1 10/12/2023 Added more country data, capital, ISO3, latitude, and longitude</h6>")),
   column(12, HTML("<h6> Version 1.0.2 12/12/2023 Loading of elevation map</h6>")),
-  column(12, HTML("<h6> Version 1.0.4 14/12/2023 Loading of country borders map</h6>")),
+  column(12, HTML("<h6> Version 1.0.3 14/12/2023 Loading of country borders map</h6>")),
+  column(12, HTML("<h6> Version 1.0.4 16/12/2023 Loading of rivers map</h6>")),
   column(12, HTML("<h6> Version 1.0.5 16/12/2023 Loading of rivers map</h6>")),
-  column(12, HTML("<h6> Version 1.0.6 16/12/2023 Loading of rivers map</h6>")),
   column(12, HTML("<h6> Version 1.1.0 30/12/2023 Program conversion from package to application and skipping layers</h6>")),
   column(12, HTML("<h6> Version 1.1.1 07/01/2024 Publication of data from selected idcomm and id_study with common and individual data</h6>")),
   column(12, HTML("<h6> Version 1.1.2 08/01/2024 Added graphs showing abundance and richness relationship over years with disturbances</h6>")),
@@ -37,7 +37,10 @@ fluidRow(
   column(12, HTML("<h6> Version 1.3.2 01/04/2024 Changed values ploted in each study deppending presence/absence by class, order,family instean abundance or richness </h6>")),
   column(12, HTML("<h6> Version 1.3.3 06/04/2024 Available to download contents pdf and html codification</h6>")),
   column(12, HTML("<h6> Version 1.3.4 13/04/2024 Downloable as csv and improve minimal mistakes</h6>")),
-  column(12, HTML("<h6> Version 1.3.5 04/05/2024 Improve memory use in filters</h6>")),
+  column(12, HTML("<h6> Version 1.3.5 04/05/2024 Improve memory use in filters and mistakes in axis graphs</h6>")),
+  column(12, HTML("<h6> Version 1.3.6 15/05/2024 Add tendency graphs in first general graphic</h6>")),
+  column(12, HTML("<h6> Version 1.3.7 22/05/2024 Add tendency graphs all graphics</h6>")),
+  column(12, HTML("<h6> Version 1.3.8 15/06/2024 Disable download buttons</h6>")),
   
   
 )#Fin pie de pagina fluidRow

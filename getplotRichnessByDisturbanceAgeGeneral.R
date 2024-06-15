@@ -26,15 +26,24 @@ getplotRichnessByDisturbanceAgeGeneral <- function(mergedAssembleagesTaxon) {
   # Calculate the number of values represented in the plot
   num_values <- nrow(result_filtered)
 
-       
+  
   # Plotting the aggregated data with adjusted width and position of bars
-  plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = combined_disturbance)) +
+  # plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = combined_disturbance)) +
+  #   geom_boxplot(position = position_dodge(width = 0.8), width = 1) +
+  #   labs(title = paste("Taxon number by disturbance from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
+  #        fill = "Disturbances") +
+  #   theme_minimal() +
+  #   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
+  #   scale_x_discrete() 
+  plotStage <- ggplot(result_filtered, aes(x = factor(age_group), y = richness, fill = combined_disturbance, color = combined_disturbance)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 1) +
-    labs(title = paste("Taxon number by disturbance from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
-         fill = "Disturbances") +
+    labs(title = paste("Taxon number by disturbance from all the studies (", num_values, "values represented)"), 
+         x = "Age Group", y = "Taxon number", fill = "Disturbances") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
-    scale_x_discrete() 
+    scale_x_discrete() +
+    geom_smooth(aes(group = combined_disturbance), method = "lm", se = FALSE)  # Añadir líneas de tendencia por grupo
+  
   
   
   # # Convert ggplot to plotly
@@ -46,7 +55,7 @@ getplotRichnessByDisturbanceAgeGeneral <- function(mergedAssembleagesTaxon) {
   
 
   ggsave("www/plotRichnessByDisturbanceAgeGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
-  rm(result_filtered)
+  rm(result_filtered,mergedAssembleagesTaxon)
   # return(plotlyPlot)
   return(plotStage)
 }

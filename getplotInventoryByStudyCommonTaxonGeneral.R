@@ -35,18 +35,28 @@ getplotInventoryByStudyCommonTaxonGeneral <- function(mergedAssembleagesTaxon) {
   num_values <- nrow(result_filtered)
 
   # Plotting the data with boxplots for each age group, colored by broad_group
-  plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = study_common_taxon_clean)) +
+  # plotStage <- ggplot(result_filtered, aes(x = age_group, y = richness, fill = study_common_taxon_clean)) +
+  #   geom_boxplot(position = position_dodge(width = 0.8), width = 0.5) +
+  #   labs(title = paste("Taxon number by common taxon from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
+  #        fill = "Common taxon") +
+  #   theme_minimal() +
+  #   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
+  #   scale_x_discrete() 
+  plotStage <- ggplot(result_filtered, aes(x = factor(age_group), y = richness, fill = study_common_taxon_clean, color = study_common_taxon_clean)) +
     geom_boxplot(position = position_dodge(width = 0.8), width = 0.5) +
-    labs(title = paste("Taxon number by common taxon from all the studies (", num_values, "values represented)"), x = "Age Group", y = "Taxon number",
-         fill = "Common taxon") +
+    labs(title = paste("Number and tendency by Common Taxon from all the studies (", num_values, "values represented)"), 
+         x = "Age Group", y = "Taxon number", fill = "Common taxon") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
-    scale_x_discrete() 
+    scale_x_discrete() +
+    geom_smooth(aes(group = study_common_taxon_clean), method = "lm", se = FALSE) +  # Añadir líneas de tendencia por grupo
+    scale_y_continuous(sec.axis = sec_axis(~., name = "Mean tendency"))  # Agregar escala de eje y derecho
+  
   
   # # Convert ggplot to plotly
   # plotlyPlot <- ggplotly(plotStage)
   #ggsave("www/plotInventoryByStudyCommonTaxonGeneral.png", plot = plotStage, width = 2.67, height = 1.67, units = "in", dpi = 300)
-  rm(result_filtered)
+  rm(result_filtered,mergedAssembleagesTaxon)
   # return(plotlyPlot)
   return(plotStage)
   
