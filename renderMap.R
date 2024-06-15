@@ -56,8 +56,8 @@ renderMap <- function(inputData) {
       metric = first(metric),
       citation = first(citation),
       database = first(database),
-      n_comm_available = n_distinct(id_comm),
-      #n_comm_available = n_comm_available,
+      #n_comm_available = n_distinct(id_comm),
+      n_comm_available = n_comm_available,
       exact_lat = first(exact_lat),  # Include exact_lat column
       exact_long = first(exact_long),  # Include exact_long column
       study_year = first(study_year),
