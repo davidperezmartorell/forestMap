@@ -1,39 +1,29 @@
-{
-  "name": "forestMap",
-  "scripts": {
-    "install": "R -e 'install.packages(c(\"shiny\", \"shinyjs\", \"dplyr\", \"ggplot2\", \"leaflet\", \"leaflet.providers\", \"rnaturalearth\", \"rnaturalearthdata\", \"raster\", \"sf\", \"tidyverse\", \"terra\", \"rgbif\", \"DT\", \"reactable\", \"plotly\", \"RColorBrewer\", \"pdfetch\", \"rmarkdown\", \"htmlTable\", \"webshot\", \"pagedown\"), repos = \"https://cloud.r-project.org\")'"
-  },
-  "env": {
-    "R_VERSION": "4.2.1"
-  },
-  "build": {
-    "config": {
-      "R_VERSION": "4.2.1",
-      "CRAN": "https://cloud.r-project.org",
-      "INSTALL": [
-        {"package": "shiny"},
-        {"package": "shinyjs"},
-        {"package": "dplyr"},
-        {"package": "ggplot2"},
-        {"package": "leaflet"},
-        {"package": "leaflet.providers"},
-        {"package": "rnaturalearth"},
-        {"package": "rnaturalearthdata"},
-        {"package": "raster"},
-        {"package": "sf"},
-        {"package": "tidyverse"},
-        {"package": "terra"},
-        {"package": "rgbif"},
-        {"package": "DT"},
-        {"package": "reactable"},
-        {"package": "plotly"},
-        {"package": "RColorBrewer"},
-        {"package": "pdfetch"},
-        {"package": "rmarkdown"},
-        {"package": "htmlTable"},
-        {"package": "webshot"},
-        {"package": "pagedown"}
-      ]
-    }
-  }
-}
+Package: forestMap
+Title: Aplicacion para crear mapas de restauracion de ecosistemas
+Version: 0.1.0
+Authors@R: person("David Perez MArtorell", email = "davidperezmartorell@email.com", role = c("aut", "cre"))
+Description: Aplicacion para crear mapas de restauracion de ecosistemas
+License: MIT + file LICENSE
+Imports:
+  shiny,
+  shinyjs,
+  dplyr,
+  ggplot2,
+  leaflet,
+  leaflet.providers,
+  rnaturalearth,
+  rnaturalearthdata,
+  raster,
+  sf,
+  tidyverse,
+  terra,
+  rgbif,
+  DT,
+  reactable,
+  plotly,
+  RColorBrewer,
+  pdfetch,
+  rmarkdown,
+  htmlTable,
+  webshot,
+  pagedown
