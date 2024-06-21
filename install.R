@@ -26,9 +26,6 @@ packages <- c(
   "pagedown"
 )
 
-# Check if each package is already installed; if not, install it
-for (package in packages) {
-  if (!requireNamespace(package, quietly = TRUE)) {
-    install.packages(package, dependencies = TRUE)
-  }
-}
+# Install packages if not already installed
+install.packages(packages, repos = "https://cloud.r-project.org")
+
