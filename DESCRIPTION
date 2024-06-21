@@ -5,12 +5,13 @@ Authors@R: person("David Perez MArtorell", email = "davidperezmartorell@email.co
 Description: Aplicacion para crear mapas de restauracion de ecosistemas
 License: MIT + file LICENSE
 Imports:
-  shiny,
-  shinyjs,
+  leaflet,
+  readr,
+  pryr,
   dplyr,
   ggplot2,
-  leaflet,
   leaflet.providers,
+  shiny,
   rnaturalearth,
   rnaturalearthdata,
   raster,
