@@ -27,7 +27,40 @@
   source("getInventoryPlotByFamilyPresence.R"); #Returns Plot with  data grouped by presence|ausence
   source("getPieGraphs.R"); #Returns 3 PIE GRAPHS WITH DISTRIBUCION IN taxonomy in that study
   
-  
+# Lista de paquetes que deseas instalar/cargar
+packages <- c(
+  "readr",
+  "pryr",
+  "dplyr",
+  "ggplot2",
+  "leaflet",
+  "leaflet.providers",
+  "shiny",
+  "shinyjs",
+  "rnaturalearth",
+  "rnaturalearthdata",
+  "raster",
+  "sf",
+  "tidyverse",
+  "terra",
+  "rgbif",
+  "DT",
+  "reactable",
+  "plotly",
+  "RColorBrewer",
+  "pdfetch",
+  "rmarkdown",
+  "htmlTable",
+  "webshot",
+  "pagedown"
+)
+
+# Verificar si los paquetes están instalados; si no, instalarlos
+install_packages <- packages[!sapply(packages, function(pkg) {
+  pkg %in% installed.packages()
+})]
+
+
   # Remove all objects from the global environment
   rm(list = ls())
   #Garbage memory
