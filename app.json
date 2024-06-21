@@ -9,7 +9,25 @@
   "build": {
     "config": {
       "R_VERSION": "4.2.1",
-      "CRAN": "https://cloud.r-project.org"
+      "CRAN": "https://cloud.r-project.org",
+      "INSTALL": [
+        {"package": "shiny"},
+        {"package": "shinyjs"},
+        {"package": "dplyr"},
+        {"package": "ggplot2"},
+        {"package": "leaflet"},
+        {"package": "leaflet.providers"},
+        {"package": "rnaturalearth"},
+        {"package": "rnaturalearthdata"},
+        {"package": "raster"},
+        {"package": "sf"},
+        {"package": "tidyverse"},
+        {"package": "terra"},
+        {"package": "rgbif"},
+        {"package": "DT"},
+        {"package": "reactable"}
+      ]
     }
   }
 }
+
