@@ -1,0 +1,29 @@
+Package: forestmap
+Title: Aplicacion para crear mapas de restauracion de ecosistemas
+Version: 0.1.0
+Authors@R: person("David Perez MArtorell", email = "davidperezmartorell@email.com", role = c("aut", "cre"))
+Description: Aplicacion para crear mapas de restauracion de ecosistemas
+License: MIT + file LICENSE
+Imports:
+  shiny,
+  shinyjs,
+  dplyr,
+  ggplot2,
+  leaflet,
+  leaflet.providers,
+  rnaturalearth,
+  rnaturalearthdata,
+  raster,
+  sf,
+  tidyverse,
+  terra,
+  rgbif,
+  DT,
+  reactable,
+  plotly,
+  RColorBrewer,
+  pdfetch,
+  rmarkdown,
+  htmlTable,
+  webshot,
+  pagedown
